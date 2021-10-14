@@ -1,0 +1,50 @@
+name:                Asteroids
+version:             0.1.0.0
+github:              "samuelhklumpers/infofp-game"
+license:             BSD3
+author:              
+    - Freek Geerligs
+    - Samuel Klumpers
+maintainer:          "samuelhklumpers@gmail.com"
+copyright:           "2021 Freek Geerligs, Samuel Klumpers"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/Asteroids#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+
+executables:
+  Asteroids-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - Asteroids
+
+tests:
+  Asteroids-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - Asteroids
