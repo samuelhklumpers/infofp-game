@@ -9,11 +9,19 @@ import World
 
 -- put all gloss and aeson stuff here
 
-window = (InWindow "Nice Window" (200, 200) (10, 10))
+w :: Int
+w = 200
+h :: Int
+h = 200
+s = fromIntegral $ min w h
+
+window = InWindow "Nice Window" (w, h) (10, 10)
 background = white
 fps = 30
 world = testWorld
 
 
+scaler = scale s s
 
-main = play window background fps world draw handler step
+
+main = play window background fps world (scaler . draw) handler step

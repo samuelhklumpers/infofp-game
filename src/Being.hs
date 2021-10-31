@@ -24,9 +24,11 @@ data Being = Being {_phys :: Phys, _race :: Race} deriving Show
 makeLenses ''Being
 
 
+-- move these to new module
 (*|) :: (Unbox a, Num a, KnownNat d) => a -> Vector d a -> Vector d a
 m *| v = VS.map (*m) v
 
+-- move these to new module
 norm :: (Unbox a, Floating a, KnownNat d) => Vector d a -> a
 norm = sqrt . VS.foldr ((+) . (^2)) 0
 
