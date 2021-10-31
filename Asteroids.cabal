@@ -28,9 +28,9 @@ library
   exposed-modules:
       Being
       Enemies
-      GameState
       Player
       Statistics
+      World
   other-modules:
       Paths_Asteroids
   hs-source-dirs:

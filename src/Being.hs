@@ -14,12 +14,13 @@ import GHC.TypeNats (KnownNat)
 
 type R2 = Vector 2 Float
 
-data Phys = Phys {_pos :: R2, _vel :: R2, _mass :: Float, _radius :: Float}
+data Phys = Phys {_pos :: R2, _vel :: R2, _mass :: Float, _radius :: Float} deriving Show
 makeLenses ''Phys
 
-data Race = Player | Asteroid | Bullet | Enemy
+data Race = Player | Asteroid | Bullet | Enemy deriving Show
 
-data Being = Being {_phys :: Phys, _race :: Race}
+-- undo Race, make GADT? --> type guarantee we don't treat a player as an asteroid
+data Being = Being {_phys :: Phys, _race :: Race} deriving Show
 makeLenses ''Being
 
 
