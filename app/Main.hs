@@ -3,6 +3,7 @@ module Main where
 
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
+import Graphics.Gloss.Interface.IO.Game
 
 import World
 
@@ -24,4 +25,13 @@ world = testWorld
 scaler = scale s s
 
 
-main = play window background fps world (scaler . draw) handler step
+main :: IO ()
+main = playIO window background fps world (return . scaler . draw) ((return .) . handler) ((return .) . step)
+
+-- ((return .) . handler)
+
+debugHandler :: Event -> World -> IO World
+debugHandler e w = do
+    print e
+    return w
+

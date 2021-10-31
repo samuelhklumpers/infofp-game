@@ -26,6 +26,7 @@ dependencies:
 - gloss
 - lens
 - aeson
+- containers
 - vector-sized
 - aeson-pretty
 

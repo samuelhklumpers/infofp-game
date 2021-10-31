@@ -27,9 +27,11 @@ source-repository head
 library
   exposed-modules:
       Being
+      Controls
       Enemies
       Player
       Statistics
+      Util
       World
   other-modules:
       Paths_Asteroids
@@ -39,6 +41,7 @@ library
       aeson
     , aeson-pretty
     , base >=4.7 && <5
+    , containers
     , gloss
     , lens
     , vector-sized
@@ -57,6 +60,7 @@ executable Asteroids-exe
     , aeson
     , aeson-pretty
     , base >=4.7 && <5
+    , containers
     , gloss
     , lens
     , vector-sized
@@ -75,6 +79,7 @@ test-suite Asteroids-test
     , aeson
     , aeson-pretty
     , base >=4.7 && <5
+    , containers
     , gloss
     , lens
     , vector-sized

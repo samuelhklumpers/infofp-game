@@ -1,30 +1,35 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module World where
 
 import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss.Data.Picture
-
 import Data.Vector.Unboxed.Sized (fromTuple, toList)
-
-import Control.Lens
-
-import Being
 import Graphics.Gloss.Data.Color (greyN)
 import GHC.TypeNats (KnownNat)
+import Control.Lens
+import Data.Map (empty)
+
+import Being
+import Controls
+import Util
 
 
-data Beings = Beings {player :: Being, asteroids :: [Being], enemies :: [Being], bullets :: [Being]} deriving Show
+data Beings = Beings {_player :: Being, asteroids :: [Being], enemies :: [Being], bullets :: [Being]} deriving Show
+makeLenses ''Beings
 
 mapb :: (Being -> Being) -> Beings -> Beings
 mapb f (Beings p a e b) = Beings (f p) (map f a) (map f e) (map f b) 
 
 
-data World = World {beings :: Beings} deriving Show
+data World = World {_beings :: Beings, _keyMap :: KeyMap} deriving Show
+makeLenses ''World
 
 
 -- drawing
 draw :: World -> Picture
-draw w = Pictures $ map drawBeing $ [player b] ++ asteroids b ++ enemies b ++ bullets b
-    where b = beings w
+draw w = Pictures $ map drawBeing $ [_player b] ++ asteroids b ++ enemies b ++ bullets b
+    where b = _beings w
 
 drawBeing :: Being -> Picture
 drawBeing Being {_phys = phys, _race = race}
@@ -43,16 +48,18 @@ colorBeing race = case race of
 
 -- handlers
 handler :: Event -> World -> World
-handler e = id
+handler e w = case e of
+    e'@EventKey {} -> keyMap %~ flip handleKeyState e' $ w
+    _              -> w
 
 -- step
 step :: Float -> World -> World
 step dt =
     damageStep .
-    physicsStep dt -- .
-    -- etc
+    physicsStep dt .
+    userStep dt
 
--- mark everybody that gets hit, e.g. player hit by bullet -> set damage, asteroid hit by bullet -> exploding, player hit by asteroid -> death animation 
+-- mark everybody that gets hit, e.g. _player hit by bullet -> set damage, asteroid hit by bullet -> exploding, _player hit by asteroid -> death animation 
 damageStep :: World -> World
 damageStep = id
 
@@ -64,9 +71,19 @@ physicsStep dt =
     -- etc
 
 
+playerAccel :: Float
+playerAccel = 0.02
+
+-- put some upper limit on vel?
+
+userStep :: Float -> World -> World
+userStep dt w = beings . player . phys . vel +~ playerAccel *| a $ w
+    where a = getAccel (w ^. keyMap)
+
+
 -- do physics movement, ignoring gravity, collisions, or other sources of acceleration
 freeFallStep :: Float -> World -> World
-freeFallStep dt w@World {beings = b} = w {beings = mapb (freeFall dt) b}
+freeFallStep dt w@World {_beings = b} = w {_beings = mapb (freeFall dt) b}
 
 -- do physics collisions, ignoring death on contact and other effects
 collisionStep :: World -> World
@@ -74,14 +91,8 @@ collisionStep = id
 
 
 -- tests
-e1 :: R2
-e1 = fromTuple (1, 0)
-
-e2 :: R2
-e2 = fromTuple (0, 1)
-
 testPlayer :: Being
-testPlayer = Being (Phys e1 (0.1 *| e2) 1 0.05) Player
+testPlayer = Being (Phys (0.25 *| e1 + 0.25 *| e2) v0 1 0.05) Player
 
 testAsteroid :: Being
 testAsteroid = Being (Phys e2 (-0.1 *| e2) 1 0.05) Asteroid
@@ -93,4 +104,4 @@ testBullet :: Being
 testBullet = Being (Phys (0 *| e1) (0.1 *| e1) 1 0.0125) Bullet
 
 testWorld :: World
-testWorld = World (Beings testPlayer [testAsteroid] [testEnemy] [testBullet]) 
+testWorld = World (Beings testPlayer [testAsteroid] [testEnemy] [testBullet]) empty
