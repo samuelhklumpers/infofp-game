@@ -40,6 +40,8 @@ library
     , aeson-pretty
     , base >=4.7 && <5
     , gloss
+    , lens
+    , vector-sized
   default-language: Haskell2010
 
 executable Asteroids-exe
@@ -56,6 +58,8 @@ executable Asteroids-exe
     , aeson-pretty
     , base >=4.7 && <5
     , gloss
+    , lens
+    , vector-sized
   default-language: Haskell2010
 
 test-suite Asteroids-test
@@ -72,4 +76,6 @@ test-suite Asteroids-test
     , aeson-pretty
     , base >=4.7 && <5
     , gloss
+    , lens
+    , vector-sized
   default-language: Haskell2010
