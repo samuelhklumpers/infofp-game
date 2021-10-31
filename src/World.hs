@@ -15,9 +15,6 @@ import Controls
 import Util
 
 
-data Beings = Beings {_player :: Being, asteroids :: [Being], enemies :: [Being], bullets :: [Being]} deriving Show
-makeLenses ''Beings
-
 mapb :: (Being -> Being) -> Beings -> Beings
 mapb f (Beings p a e b) = Beings (f p) (map f a) (map f e) (map f b) 
 
@@ -28,7 +25,7 @@ makeLenses ''World
 
 -- drawing
 draw :: World -> Picture
-draw w = Pictures $ map drawBeing $ [_player b] ++ asteroids b ++ enemies b ++ bullets b
+draw w = Pictures $ map drawBeing $ [_player b] ++ _asteroids b ++ _enemies b ++ _bullets b
     where b = _beings w
 
 drawBeing :: Being -> Picture
@@ -87,7 +84,7 @@ freeFallStep dt w@World {_beings = b} = w {_beings = mapb (freeFall dt) b}
 
 -- do physics collisions, ignoring death on contact and other effects
 collisionStep :: World -> World
-collisionStep = id
+collisionStep = beings %~ collisions
 
 
 -- tests
@@ -95,13 +92,13 @@ testPlayer :: Being
 testPlayer = Being (Phys (0.25 *| e1 + 0.25 *| e2) v0 1 0.05) Player
 
 testAsteroid :: Being
-testAsteroid = Being (Phys e2 (-0.1 *| e2) 1 0.05) Asteroid
+testAsteroid = Being (Phys e2 v0 1 0.05) Asteroid
 
 testEnemy :: Being
-testEnemy = Being (Phys (e1 + e2) (-0.1 *| e2) 1 0.05) Enemy
+testEnemy = Being (Phys (e1 + e2) v0 1 0.05) Enemy
 
 testBullet :: Being
-testBullet = Being (Phys (0 *| e1) (0.1 *| e1) 1 0.0125) Bullet
+testBullet = Being (Phys (0 *| e1) v0 1 0.0125) Bullet
 
 testWorld :: World
 testWorld = World (Beings testPlayer [testAsteroid] [testEnemy] [testBullet]) empty

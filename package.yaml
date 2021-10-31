@@ -27,6 +27,7 @@ dependencies:
 - lens
 - aeson
 - containers
+- array
 - vector-sized
 - aeson-pretty
 

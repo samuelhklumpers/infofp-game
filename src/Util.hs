@@ -16,6 +16,8 @@ type R2 = Vector 2 Float
 -- move these to new module
 (*|) :: (Unbox a, Num a, KnownNat d) => a -> Vector d a -> Vector d a
 m *| v = VS.map (*m) v
+infixl 8 *|
+
 
 -- move these to new module
 norm :: (Unbox a, Floating a, KnownNat d) => Vector d a -> a

@@ -40,6 +40,7 @@ library
   build-depends:
       aeson
     , aeson-pretty
+    , array
     , base >=4.7 && <5
     , containers
     , gloss
@@ -59,6 +60,7 @@ executable Asteroids-exe
       Asteroids
     , aeson
     , aeson-pretty
+    , array
     , base >=4.7 && <5
     , containers
     , gloss
@@ -78,6 +80,7 @@ test-suite Asteroids-test
       Asteroids
     , aeson
     , aeson-pretty
+    , array
     , base >=4.7 && <5
     , containers
     , gloss
