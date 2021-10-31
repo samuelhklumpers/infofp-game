@@ -39,10 +39,13 @@ library
       src
   build-depends:
       aeson
+    , aeson-default
     , aeson-pretty
     , array
     , base >=4.7 && <5
+    , bytestring
     , containers
+    , directory
     , gloss
     , lens
     , vector-sized
@@ -51,7 +54,6 @@ library
 executable Asteroids-exe
   main-is: Main.hs
   other-modules:
-      Scores
       Paths_Asteroids
   hs-source-dirs:
       app
@@ -59,10 +61,13 @@ executable Asteroids-exe
   build-depends:
       Asteroids
     , aeson
+    , aeson-default
     , aeson-pretty
     , array
     , base >=4.7 && <5
+    , bytestring
     , containers
+    , directory
     , gloss
     , lens
     , vector-sized
@@ -79,10 +84,13 @@ test-suite Asteroids-test
   build-depends:
       Asteroids
     , aeson
+    , aeson-default
     , aeson-pretty
     , array
     , base >=4.7 && <5
+    , bytestring
     , containers
+    , directory
     , gloss
     , lens
     , vector-sized

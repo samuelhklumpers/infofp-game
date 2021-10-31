@@ -12,6 +12,9 @@ import Util
 
 
 type KeyMap = Map Key KeyState
+emptyKM :: KeyMap
+emptyKM = M.empty
+
 
 handleKeyState :: KeyMap -> Event -> KeyMap
 handleKeyState km (EventKey key s mod _) = insert key s km 

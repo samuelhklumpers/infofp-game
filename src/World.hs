@@ -7,19 +7,21 @@ import Graphics.Gloss.Data.Picture
 import Data.Vector.Unboxed.Sized (fromTuple, toList)
 import Graphics.Gloss.Data.Color (greyN)
 import GHC.TypeNats (KnownNat)
+import Data.Functor.Identity
 import Control.Lens
 import Data.Map (empty)
 
 import Being
 import Controls
 import Util
+import Statistics
 
 
 mapb :: (Being -> Being) -> Beings -> Beings
-mapb f (Beings p a e b) = Beings (f p) (map f a) (map f e) (map f b) 
+mapb f (Beings p a e b) = Beings (f p) (map f a) (map f e) (map f b)
 
 
-data World = World {_beings :: Beings, _keyMap :: KeyMap} deriving Show
+data World = World {_beings :: Beings, _keyMap :: KeyMap, _stats:: Stats' Identity, highscores :: [Stats' Identity]} deriving Show
 makeLenses ''World
 
 
@@ -54,7 +56,8 @@ step :: Float -> World -> World
 step dt =
     damageStep .
     physicsStep dt .
-    userStep dt
+    userStep dt .
+    scoreStep dt
 
 -- mark everybody that gets hit, e.g. _player hit by bullet -> set damage, asteroid hit by bullet -> exploding, _player hit by asteroid -> death animation 
 damageStep :: World -> World
@@ -66,6 +69,9 @@ physicsStep dt =
     freeFallStep dt -- .
     -- otherStep .
     -- etc
+
+scoreStep :: Float -> World -> World
+scoreStep dt = stats . survived +~ Identity dt -- I hate Identity
 
 
 playerAccel :: Float
@@ -100,5 +106,6 @@ testEnemy = Being (Phys (e1 + e2) v0 1 0.05) Enemy
 testBullet :: Being
 testBullet = Being (Phys (0 *| e1) v0 1 0.0125) Bullet
 
+
 testWorld :: World
-testWorld = World (Beings testPlayer [testAsteroid] [testEnemy] [testBullet]) empty
+testWorld = World (Beings testPlayer [testAsteroid] [testEnemy] [testBullet]) emptyKM (Stats' 0.0) []

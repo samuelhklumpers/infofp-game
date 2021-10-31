@@ -28,6 +28,9 @@ dependencies:
 - aeson
 - containers
 - array
+- bytestring
+- directory
+- aeson-default
 - vector-sized
 - aeson-pretty
 
