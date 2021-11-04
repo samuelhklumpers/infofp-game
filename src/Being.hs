@@ -17,10 +17,14 @@ import Control.Monad.ST
 import Data.Array.ST
 
 
-data Phys = Phys {_pos :: R2, _vel :: R2, _mass :: Float, _radius :: Float} deriving Show
+type Mass = Float
+type Radius = Float
+type Timeout = Float
+
+data Phys = Phys {_pos :: R2, _vel :: R2, _mass :: Mass, _radius :: Radius} deriving Show
 makeLenses ''Phys
 
-data Race = Player | Asteroid | Bullet | Enemy deriving Show
+data Race = Player Timeout | Asteroid | Bullet | Enemy Timeout deriving Show
 
 -- undo Race, make GADT? --> type guarantee we don't treat a player as an asteroid
 data Being = Being {_phys :: Phys, _race :: Race} deriving Show
@@ -39,8 +43,8 @@ fromListB :: [Being] -> Beings
 fromListB = foldr marker b0 where
     marker b bs = case _race b of
         Asteroid    -> asteroids %~ (b:) $ bs
-        Player      -> player .~ b $ bs
-        Enemy       -> enemies %~ (b:) $ bs
+        Player _    -> player .~ b $ bs
+        Enemy  _    -> enemies %~ (b:) $ bs
         Bullet      -> bullets %~ (b:) $ bs
     b0 = Beings undefined [] [] []
 

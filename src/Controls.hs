@@ -17,7 +17,7 @@ emptyKM = M.empty
 
 
 handleKeyState :: KeyMap -> Event -> KeyMap
-handleKeyState km (EventKey key s mod _) = insert key s km 
+handleKeyState km (EventKey key s mod _) = insert key s km
 handleKeyState _ _ = error "handleKeyState got EventMotion or EventResize"
 
 setDefault :: Ord k => k -> v -> Map k v -> Map k v
@@ -46,5 +46,7 @@ getAccel :: KeyMap -> R2
 getAccel km = foldrWithKey f v0 dirMap where
     f k v v' = case M.lookup k km of
         Just Down -> v + v'
-        _       -> v'
+        _         -> v'
 
+getFire :: KeyMap -> Bool
+getFire km = Just Down == M.lookup controlFire km

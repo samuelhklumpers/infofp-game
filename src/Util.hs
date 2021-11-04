@@ -24,6 +24,10 @@ norm :: (Unbox a, Floating a, KnownNat d) => Vector d a -> a
 norm = sqrt . VS.foldr ((+) . (^2)) 0
 
 
+dot :: (Unbox a, Floating a, KnownNat d) => Vector d a -> Vector d a -> a
+dot = (VS.foldr (+) 0 .) . VS.zipWith (*)
+
+
 v0 :: R2
 v0 = fromTuple (0, 0)
 
