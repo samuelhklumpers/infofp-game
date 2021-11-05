@@ -84,7 +84,7 @@ fireStep dt = execState $ do
                 let x = ph ^. pos
                 let v = ph ^. vel
                 let rad = ph ^. radius
-                beings . bullets <>= [Being (Phys (x + 2 * rad *| e2) (v + 200 * e2) 0.1 10) Bullet]
+                beings . bullets <>= [makeBeing Bullet (x + 2 * rad *| e2) (v + 200 * e2)]
             else
                 beings . player . race .= Player t'
         _ -> return ()
@@ -103,8 +103,9 @@ damageStep = execState $ do
     fr <- use frame
 
     let bs' = filter (isInBounds fr . (^. phys . pos)) bs -- maybe prevent deleting the player
+    let bs'' = filter ((>0) . (^. health)) bs'
 
-    beings .= fromListB bs'
+    beings .= fromListB bs''
 
 
 physicsStep :: Float -> World -> World
@@ -139,17 +140,18 @@ collisionStep = beings %~ collisions
 
 -- tests
 testPlayer :: Being
-testPlayer = Being (Phys (400 * e1 + 400 * e2) v0 1 20) (Player 0)
+testPlayer = makeBeing (Player 0) (400 * e1 + 400 * e2) v0
 
 testAsteroid :: Being
-testAsteroid = Being (Phys (400 * e1 + 100 * e2) v0 1 30) Asteroid
+testAsteroid = makeBeing Asteroid (400 * e1 + 100 * e2) v0
 
+{-
 testEnemy :: Being
 testEnemy = Being (Phys (100 * e2) v0 1 20) (Enemy 0)
 
 testBullet :: Being
 testBullet = Being (Phys (100 * (e1 + e2)) v0 1 10) Bullet
-
+-}
  
 testWorld :: Frame -> World
 testWorld frame = World frame (Beings testPlayer [testAsteroid] [] []) emptyKM (Stats' 0.0) []

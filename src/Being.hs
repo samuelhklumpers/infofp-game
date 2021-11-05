@@ -20,14 +20,16 @@ import Data.Array.ST
 type Mass = Float
 type Radius = Float
 type Timeout = Float
+type Health = Int
 
 data Phys = Phys {_pos :: R2, _vel :: R2, _mass :: Mass, _radius :: Radius} deriving Show
 makeLenses ''Phys
 
+
 data Race = Player Timeout | Asteroid | Bullet | Enemy Timeout deriving Show
 
 -- undo Race, make GADT? --> type guarantee we don't treat a player as an asteroid
-data Being = Being {_phys :: Phys, _race :: Race} deriving Show
+data Being = Being {_phys :: Phys, _race :: Race, _health :: Health} deriving Show
 makeLenses ''Being
 
 
@@ -42,11 +44,11 @@ toListB (Beings p as es bs) = [p] ++ as ++ es ++ bs
 fromListB :: [Being] -> Beings
 fromListB = foldr marker b0 where
     marker b bs = case _race b of
-        Asteroid    -> asteroids %~ (b:) $ bs
-        Player _    -> player .~ b $ bs
-        Enemy  _    -> enemies %~ (b:) $ bs
-        Bullet      -> bullets %~ (b:) $ bs
-    b0 = Beings undefined [] [] []
+        Asteroid {} -> asteroids %~ (b:) $ bs
+        Player {}   -> player .~ b $ bs
+        Enemy  {}   -> enemies %~ (b:) $ bs
+        Bullet {}   -> bullets %~ (b:) $ bs
+    b0 = Beings (makeBeing (Player 0) v0 v0) [] [] []
 
 
 
@@ -75,9 +77,7 @@ collisions = fromListB . doCollisions . toListB
 
 -- to lazy to do actual sphere-sphere collision so put point-point for now
 bump :: Being -> Being -> (Being, Being)
-bump a b = case cv of 
-        Just _  -> (phys . vel .~ v1 $ a, phys . vel .~ v2 $ b)
-        Nothing -> (a, b) 
+bump a b = (phys . vel .~ v1 $ a, phys . vel .~ v2 $ b)
     where
         cv = collide a b
 
@@ -91,6 +91,23 @@ bump a b = case cv of
         v2 =   (2 * m1 / (m1 + m2)) *| u1  + ((m2 - m1) / (m1 + m2)) *| u2
 
 
+harm :: Being -> Being -> (Being, Being)
+harm a b = case a ^. race of
+    Player {} -> case b ^. race of 
+        Player {} -> error "this game was supposed to be single-player..."
+        _         -> (health -~ 1 $ a, health -~ 1 $ b)
+    Bullet {} -> case b ^. race of
+        Bullet {} -> (a, b)
+        _         -> (health -~ 1 $ a, health -~ 1 $ b)
+    Asteroid {} -> case b ^. race of
+        Player {} -> harm b a
+        Bullet {} -> harm b a
+        _         -> (a, b)
+    Enemy {} -> case b ^. race of
+        Enemy {}  -> (a, b)
+        _         -> harm b a
+
+
 -- 8)
 doCollisions :: [Being] -> [Being]
 doCollisions bs = runST $ do
@@ -102,8 +119,25 @@ doCollisions bs = runST $ do
         forM_ [i+1..n] $ \j -> do
             a <- readArray arr i
             b <- readArray arr j
-            let (a', b') = bump a b
-            writeArray arr i a'
-            writeArray arr j b'
+
+            let cv = collide a b
+
+            case cv of 
+                Just _  -> do
+                    let (a', b') = bump a b
+                    let (a'', b'') = harm a' b'
+
+                    writeArray arr i a''
+                    writeArray arr j b''
+                    
+                _       -> return ()
 
     getElems arr
+
+
+makeBeing :: Race -> R2 -> R2 -> Being
+makeBeing r x v = case r of 
+    Player t    -> Being (Phys x v 1.0 16) r 2
+    Enemy t     -> Being (Phys x v 1.0 16) r 2
+    Asteroid    -> Being (Phys x v 1.0 24) r 2
+    Bullet      -> Being (Phys x v 1.0 8)  r 2
