@@ -23,6 +23,10 @@ infixl 8 *|
 norm :: (Unbox a, Floating a, KnownNat d) => Vector d a -> a
 norm = sqrt . VS.foldr ((+) . (^2)) 0
 
+unit :: (Unbox a, Floating a, KnownNat d) => Vector d a -> Vector d a
+unit v = (1/norm v) *| v
+
+
 
 dot :: (Unbox a, Floating a, KnownNat d) => Vector d a -> Vector d a -> a
 dot = (VS.foldr (+) 0 .) . VS.zipWith (*)
