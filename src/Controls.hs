@@ -38,7 +38,7 @@ controlL = Char 'j'
 controlFire = Char 'f'
 
 
-dirMap :: Map Key R2
+dirMap :: Map Key Vector
 dirMap = fromList [
         (controlU, e2),
         (controlR, e1),
@@ -47,7 +47,7 @@ dirMap = fromList [
     ]
 
 
-getAccel :: KeyMap -> R2
+getAccel :: KeyMap -> Vector
 getAccel km = foldrWithKey f v0 dirMap where
     f k v v' = case M.lookup k km of
         Just Down -> v Vec.+ v'

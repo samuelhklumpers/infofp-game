@@ -30,6 +30,7 @@ library
       Controls
       Enemies
       Player
+      Shooting
       Statistics
       Util
       World

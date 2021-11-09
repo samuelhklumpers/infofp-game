@@ -6,7 +6,9 @@ module World where
 import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss.Data.Picture
 import Data.Vector.Unboxed.Sized (fromTuple, toList)
-import qualified Data.Vector.Unboxed.Sized as VS
+
+import Graphics.Gloss.Data.Vector
+import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
 import Graphics.Gloss.Data.Color (greyN)
 import GHC.TypeNats (KnownNat)
 import Data.Functor.Identity
@@ -40,7 +42,7 @@ drawBeing Being {_phys = phys, _race = race}
     = color c $ translate x y $ circleSolid r
     where
         Phys {_pos = p, _radius = r} = phys
-        [x, y] = toList p
+        (x, y) = p
         c = colorBeing race
 
 colorBeing :: Race -> Color
@@ -84,7 +86,7 @@ fireStep dt = execState $ do
                 let x = ph ^. pos
                 let v = ph ^. vel
                 let rad = ph ^. radius
-                beings . bullets <>= [makeBeing Bullet (x + 2 * rad *| e2) (v + 200 * e2)]
+                beings . bullets <>= [makeBeing Bullet (x Vec.+ (2 * rad) `mulSV` e2) (v Vec.+ 200 `mulSV` e2)]
             else
                 beings . player . race .= Player t'
         _ -> return ()
@@ -92,8 +94,8 @@ fireStep dt = execState $ do
 
 
 -- replace with actual screen bounds if necessary
-isInBounds :: Frame -> R2 -> Bool
-isInBounds f v = let [x1, y1] = toList v in let (x2, y2) = f in
+isInBounds :: Frame -> Vector -> Bool
+isInBounds f v = let (x1, y1) = v in let (x2, y2) = f in
     0 <= x1 && x1 <= x2 && 0 <= y1 && y1 <= y2
 
 -- mark everybody that gets hit, e.g. _player hit by bullet -> set damage, asteroid hit by bullet -> exploding, _player hit by asteroid -> death animation 
@@ -125,7 +127,7 @@ playerAccel = 8
 -- put some upper limit on vel?
 
 userStep :: Float -> World -> World
-userStep dt w = beings . player . phys . vel +~ playerAccel *| a $ w
+userStep dt w = beings . player . phys . vel %~ (Vec.+ playerAccel `mulSV` a) $ w
     where a = getAccel (w ^. keyMap)
 
 
@@ -140,10 +142,10 @@ collisionStep = beings %~ collisions
 
 -- tests
 testPlayer :: Being
-testPlayer = makeBeing (Player 0) (400 * e1 + 400 * e2) v0
+testPlayer = makeBeing (Player 0) (400 `mulSV` e1 Vec.+ 400 `mulSV` e2) v0
 
 testAsteroid :: Being
-testAsteroid = makeBeing Asteroid (400 * e1 + 100 * e2) v0
+testAsteroid = makeBeing Asteroid (400 `mulSV` e1 Vec.+ 100 `mulSV` e2) v0
 
 {-
 testEnemy :: Being

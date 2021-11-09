@@ -25,7 +25,7 @@ type Radius = Float
 type Timeout = Float
 type Health = Int
 
-data Phys = Phys {_pos :: R2, _vel :: R2, _mass :: Mass, _radius :: Radius} deriving Show
+data Phys = Phys {_pos :: Vector, _vel :: Vector, _mass :: Mass, _radius :: Radius} deriving Show
 makeLenses ''Phys
 
 
@@ -34,6 +34,12 @@ data Race = Player Timeout | Asteroid | Bullet | Enemy Timeout deriving Show
 -- undo Race, make GADT? --> type guarantee we don't treat a player as an asteroid
 data Being = Being {_phys :: Phys, _race :: Race, _health :: Health} deriving Show
 makeLenses ''Being
+
+
+data Pointed a = Pointed a [a]
+
+instance Functor Pointed where
+        fmap f (Pointed x xs) = Pointed (f x) (fmap f xs)
 
 
 data Beings = Beings {_player :: Being, _asteroids :: [Being], _enemies :: [Being], _bullets :: [Being]} deriving Show
@@ -60,16 +66,16 @@ freeFall :: Float -> Being -> Being
 freeFall dt = phys %~ freeFall' dt
 
 freeFall' :: Float -> Phys -> Phys
-freeFall' dt p = pos %~ (Vec.+ (mulSV dt (p^.vel)))$ p
+freeFall' dt p = pos %~ (Vec.+ mulSV dt (p ^.vel)) $ p
 
 -- Just (collision vector) when colliding, otherwise None
 -- TODO need posteriori collision detection to prevent _bullets teleporting through thin surfaces
-collide :: Being -> Being -> Maybe R2
+collide :: Being -> Being -> Maybe Vector
 collide a b
     | d1 <= d2  = Just v
     | otherwise = Nothing where
         v = (a ^. phys . pos) Vec.- (b ^. phys . pos)
-        d1 = norm v
+        d1 = magV v
         d2 = (a ^. phys . radius) + (b ^. phys . radius)
 
 
@@ -90,13 +96,13 @@ bump a b = (phys . vel .~ v1 $ a, phys . vel .~ v2 $ b)
         m2 = b ^. phys . mass
 
         -- ideally *| has higher fixity than +-, but lower than */, but that doesn't seem possible...
-        v1 = ((m1 - m2) / (m1 + m2)) *| u1 Vec.+   (2 * m2 / (m1 + m2)) *| u2
-        v2 =    (2 * m1 / (m1 + m2)) *| u1 Vec.+ ((m2 - m1) / (m1 + m2)) *| u2
+        v1 = mulSV ((m1 - m2) / (m1 + m2)) u1 Vec.+ mulSV (2 * m2 / (m1 + m2)) u2
+        v2 = mulSV (2 * m1 / (m1 + m2)) u1 Vec.+ mulSV ((m2 - m1) / (m1 + m2)) u2
 
 
 harm :: Being -> Being -> (Being, Being)
 harm a b = case a ^. race of
-    Player {} -> case b ^. race of 
+    Player {} -> case b ^. race of
         Player {} -> error "this game was supposed to be single-player..."
         _         -> (health -~ 1 $ a, health -~ 1 $ b)
     Bullet {} -> case b ^. race of
@@ -125,21 +131,21 @@ doCollisions bs = runST $ do
 
             let cv = collide a b
 
-            case cv of 
+            case cv of
                 Just _  -> do
                     let (a', b') = bump a b
                     let (a'', b'') = harm a' b'
 
                     writeArray arr i a''
                     writeArray arr j b''
-                    
+
                 _       -> return ()
 
     getElems arr
 
 
-makeBeing :: Race -> R2 -> R2 -> Being
-makeBeing r x v = case r of 
+makeBeing :: Race -> Vector -> Vector -> Being
+makeBeing r x v = case r of
     Player t    -> Being (Phys x v 1.0 16) r 2
     Enemy t     -> Being (Phys x v 1.0 16) r 2
     Asteroid    -> Being (Phys x v 1.0 24) r 2
