@@ -15,6 +15,8 @@ import Data.Functor.Identity
 import Control.Lens
 import Control.Monad.State
 import Data.Map (empty)
+import System.Random
+import System.Random.Stateful
 
 import Being
 import Controls
@@ -24,8 +26,32 @@ import Statistics
 
 type Frame = (Float, Float)
 
-data World = World {_frame :: Frame, _beings :: Beings, _keyMap :: KeyMap, _stats:: Stats' Identity, highscores :: [Stats' Identity]} deriving Show
+spawnTick :: Float
+spawnTick = 0.1 -- seconds
+
+toRate :: Float -> Float
+toRate interval = perTick where 
+    perSecond = 1 / interval
+    perTick = perSecond * spawnTick
+    
+-- rates as in T ~ Exp(1/t), t in spawnTicks
+data SpawnData = SpawnData {_timeSinceLast :: Float, _asteroidRate :: Float, _enemyRate :: Float} deriving Show
+makeLenses ''SpawnData
+
+
+data World = World {
+    _frame :: Frame,
+    _beings :: Beings,
+    _keyMap :: KeyMap,
+    _stats :: Stats' Identity,
+    _spawns :: SpawnData,
+    _randomizer :: StdGen,
+    highscores :: [Stats' Identity]
+}
 makeLenses ''World
+
+instance Show World where
+    show w = ":(" -- put stuff here StateGenM doesn't print nice
 
 
 -- drawing
@@ -61,17 +87,17 @@ step dt =
     damageStep .
     physicsStep dt .
     userStep dt .
-    scoreStep dt -- .
---    spawnStep dt 
+    scoreStep dt .
+    spawnStep dt
 
-fireTimeout :: Float 
+fireTimeout :: Float
 fireTimeout = 0.3
 
 fireStep :: Float -> World -> World
 fireStep dt = execState $ do
     r <- use $ beings . player . race
 
-    case r of 
+    case r of
         Player t -> do
             let t' = min (t + dt) fireTimeout
 
@@ -82,11 +108,46 @@ fireStep dt = execState $ do
                 let x = ph ^. pos
                 let v = ph ^. vel
                 let rad = ph ^. radius
-                beings <>= terminal (makeBeing Bullet (x Vec.+ (2 * rad) `mulSV` e2) (v Vec.+ 200 `mulSV` e2))
+                spawnBeing (makeBeing Bullet (x Vec.+ (2 * rad) `mulSV` e2) (v Vec.+ 200 `mulSV` e2))
             else
                 beings . player . race .= Player t'
         _ -> return ()
 
+
+spawnBeing :: Being -> State World ()
+spawnBeing b = beings <>= terminal b
+
+
+uniformF :: Float -> Float -> State StdGen Float
+uniformF l h = state $ uniformR (l, h)
+
+
+spawnStep :: Float -> World -> World
+spawnStep dt = execState $ do
+    spawns . timeSinceLast += dt
+    t <- use (spawns . timeSinceLast)
+    rate <- use (spawns . asteroidRate)
+    (w, h) <- use frame
+    -- put enemy here too
+
+    let n = round (t / spawnTick)
+    spawns . timeSinceLast -= fromIntegral n * spawnTick
+
+    forM_ [1..n] $ \_ -> do -- lol
+        ret <- zoom randomizer $ do
+            roll <- uniformF 0.0 1.0
+
+            if roll < rate then do
+                x <- uniformF 0.0 w
+                vx <- uniformF (-20) 20
+                vy <- uniformF (-40) (-200)
+                let y = 600.0
+                return $ Just (x, y, vx, vy)
+            else return Nothing
+
+        case ret of
+            Just (x, y, vx, vy) -> spawnBeing (makeBeing Asteroid (x, y) (vx, vy))
+            Nothing -> return ()
 
 
 -- replace with actual screen bounds if necessary
@@ -150,6 +211,9 @@ testEnemy = Being (Phys (100 * e2) v0 1 20) (Enemy 0)
 testBullet :: Being
 testBullet = Being (Phys (100 * (e1 + e2)) v0 1 10) Bullet
 -}
- 
-testWorld :: Frame -> World
-testWorld frame = World frame (Pointed testPlayer [testAsteroid]) emptyKM (Stats' 0.0) []
+
+testWorld :: Frame -> IO World
+testWorld frame = do
+    rng <- newStdGen
+
+    return $ World frame (Pointed testPlayer [testAsteroid]) emptyKM (Stats' 0.0) (SpawnData 0 (toRate 0.5) 0) rng []

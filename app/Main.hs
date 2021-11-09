@@ -31,12 +31,15 @@ windowFrame = (fromIntegral w, fromIntegral h)
 
 window :: Display
 window = InWindow "Nice Window" (w, h) (10, 10)
+
 background :: Color
 background = black
+
 fps :: Int
 fps = 30
-world :: World
-world = testWorld windowFrame
+
+initWorld :: IO World
+initWorld = testWorld windowFrame
 
 
 screenTransform :: Picture -> Picture
@@ -60,6 +63,8 @@ stepHandle dt w = do
 main :: IO ()
 main = do
     scores <- fromMaybe [] <$> (jload "scores.json" :: IO (Maybe [Stats' Identity]))
+
+    world <- initWorld
 
     playIO window background fps (world {highscores = scores}) (return . screenTransform . draw) ((return .) . handler) stepHandle
 

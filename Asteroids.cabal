@@ -50,6 +50,7 @@ library
     , gloss
     , lens
     , mtl
+    , random
     , vector-sized
   default-language: Haskell2010
 
@@ -73,6 +74,7 @@ executable Asteroids-exe
     , gloss
     , lens
     , mtl
+    , random
     , vector-sized
   default-language: Haskell2010
 
@@ -97,5 +99,6 @@ test-suite Asteroids-test
     , gloss
     , lens
     , mtl
+    , random
     , vector-sized
   default-language: Haskell2010
