@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 
 
@@ -36,21 +37,38 @@ data Being = Being {_phys :: Phys, _race :: Race, _health :: Health} deriving Sh
 makeLenses ''Being
 
 
-data Pointed a = Pointed a [a]
+data Pointed a = Pointed {_player :: a, _npo :: [a]}
+makeLenses ''Pointed
+
+toList :: Pointed a -> [a]
+toList (Pointed x xs) = x:xs
+
+fromList :: [a] -> Pointed a
+fromList (x:xs) = Pointed x xs
+fromList _ = error "empty list cannot be Pointed"
 
 instance Functor Pointed where
-        fmap f (Pointed x xs) = Pointed (f x) (fmap f xs)
+    fmap f = fromList . fmap f . toList
+
+instance Semigroup (Pointed a) where
+    p <> q = fromList $ toList p <> toList q
+
+deriving instance Show a => Show (Pointed a)
+
+terminal :: a -> Pointed a
+terminal x = Pointed x []
 
 
-data Beings = Beings {_player :: Being, _asteroids :: [Being], _enemies :: [Being], _bullets :: [Being]} deriving Show
-makeLenses ''Beings
+--data Beings = Beings {_player :: Being, _asteroids :: [Being], _enemies :: [Being], _bullets :: [Being]} deriving Show
+--makeLenses ''Beings
+type Beings = Pointed Being
 
 -- at this point, I already had found out that making Beings anything other than type Beings = [Being] or Set Being was a mistake
-toListB :: Beings -> [Being]
-toListB (Beings p as es bs) = [p] ++ as ++ es ++ bs
+--toListB :: Beings -> [Being]
+--toListB (Beings p as es bs) = [p] ++ as ++ es ++ bs
 
 -- yup
-fromListB :: [Being] -> Beings
+{-fromListB :: [Being] -> Beings
 fromListB = foldr marker b0 where
     marker b bs = case _race b of
         Asteroid {} -> asteroids %~ (b:) $ bs
@@ -58,7 +76,7 @@ fromListB = foldr marker b0 where
         Enemy  {}   -> enemies %~ (b:) $ bs
         Bullet {}   -> bullets %~ (b:) $ bs
     b0 = Beings (makeBeing (Player 0) v0 v0) [] [] []
-
+-}
 
 
 -- move assuming no gravity or collision
@@ -81,7 +99,7 @@ collide a b
 
 -- elastic collision
 collisions :: Beings -> Beings
-collisions = fromListB . doCollisions . toListB
+collisions = fromList . doCollisions . toList
 
 
 -- to lazy to do actual sphere-sphere collision so put point-point for now

@@ -22,10 +22,6 @@ import Util
 import Statistics
 
 
-mapb :: (Being -> Being) -> Beings -> Beings
-mapb f (Beings p a e b) = Beings (f p) (map f a) (map f e) (map f b)
-
-
 type Frame = (Float, Float)
 
 data World = World {_frame :: Frame, _beings :: Beings, _keyMap :: KeyMap, _stats:: Stats' Identity, highscores :: [Stats' Identity]} deriving Show
@@ -34,8 +30,8 @@ makeLenses ''World
 
 -- drawing
 draw :: World -> Picture
-draw w = Pictures $ map drawBeing $ [_player b] ++ _asteroids b ++ _enemies b ++ _bullets b
-    where b = _beings w
+draw w = Pictures $ map drawBeing b
+    where b = Being.toList $ _beings w
 
 drawBeing :: Being -> Picture
 drawBeing Being {_phys = phys, _race = race}
@@ -86,7 +82,7 @@ fireStep dt = execState $ do
                 let x = ph ^. pos
                 let v = ph ^. vel
                 let rad = ph ^. radius
-                beings . bullets <>= [makeBeing Bullet (x Vec.+ (2 * rad) `mulSV` e2) (v Vec.+ 200 `mulSV` e2)]
+                beings <>= terminal (makeBeing Bullet (x Vec.+ (2 * rad) `mulSV` e2) (v Vec.+ 200 `mulSV` e2))
             else
                 beings . player . race .= Player t'
         _ -> return ()
@@ -101,13 +97,13 @@ isInBounds f v = let (x1, y1) = v in let (x2, y2) = f in
 -- mark everybody that gets hit, e.g. _player hit by bullet -> set damage, asteroid hit by bullet -> exploding, _player hit by asteroid -> death animation 
 damageStep :: World -> World
 damageStep = execState $ do
-    bs <- uses beings toListB
+    bs <- uses beings Being.toList
     fr <- use frame
 
     let bs' = filter (isInBounds fr . (^. phys . pos)) bs -- maybe prevent deleting the player
     let bs'' = filter ((>0) . (^. health)) bs'
 
-    beings .= fromListB bs''
+    beings .= Being.fromList bs''
 
 
 physicsStep :: Float -> World -> World
@@ -133,7 +129,7 @@ userStep dt w = beings . player . phys . vel %~ (Vec.+ playerAccel `mulSV` a) $ 
 
 -- do physics movement, ignoring gravity, collisions, or other sources of acceleration
 freeFallStep :: Float -> World -> World
-freeFallStep dt w@World {_beings = b} = w {_beings = mapb (freeFall dt) b}
+freeFallStep dt w@World {_beings = b} = w {_beings = fmap (freeFall dt) b}
 
 -- do physics collisions, ignoring death on contact and other effects
 collisionStep :: World -> World
@@ -156,4 +152,4 @@ testBullet = Being (Phys (100 * (e1 + e2)) v0 1 10) Bullet
 -}
  
 testWorld :: Frame -> World
-testWorld frame = World frame (Beings testPlayer [testAsteroid] [] []) emptyKM (Stats' 0.0) []
+testWorld frame = World frame (Pointed testPlayer [testAsteroid]) emptyKM (Stats' 0.0) []
