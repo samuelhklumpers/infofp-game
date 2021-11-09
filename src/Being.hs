@@ -6,7 +6,10 @@
 module Being where
 
 
-import qualified Data.Vector.Unboxed.Sized as VS
+--import qualified Data.Vector.Unboxed.Sized as VS
+import Graphics.Gloss.Data.Vector
+import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
+
 import Control.Lens
 import GHC.TypeNats (KnownNat)
 import Data.Array.MArray
@@ -57,7 +60,7 @@ freeFall :: Float -> Being -> Being
 freeFall dt = phys %~ freeFall' dt
 
 freeFall' :: Float -> Phys -> Phys
-freeFall' dt p = pos +~ dt *| (p ^. vel) $ p
+freeFall' dt p = pos %~ (Vec.+ (mulSV dt (p^.vel)))$ p
 
 -- Just (collision vector) when colliding, otherwise None
 -- TODO need posteriori collision detection to prevent _bullets teleporting through thin surfaces
@@ -65,7 +68,7 @@ collide :: Being -> Being -> Maybe R2
 collide a b
     | d1 <= d2  = Just v
     | otherwise = Nothing where
-        v = (a ^. phys . pos) - (b ^. phys . pos)
+        v = (a ^. phys . pos) Vec.- (b ^. phys . pos)
         d1 = norm v
         d2 = (a ^. phys . radius) + (b ^. phys . radius)
 
@@ -87,8 +90,8 @@ bump a b = (phys . vel .~ v1 $ a, phys . vel .~ v2 $ b)
         m2 = b ^. phys . mass
 
         -- ideally *| has higher fixity than +-, but lower than */, but that doesn't seem possible...
-        v1 = ((m1 - m2) / (m1 + m2)) *| u1 +   (2 * m2 / (m1 + m2)) *| u2
-        v2 =   (2 * m1 / (m1 + m2)) *| u1  + ((m2 - m1) / (m1 + m2)) *| u2
+        v1 = ((m1 - m2) / (m1 + m2)) *| u1 Vec.+   (2 * m2 / (m1 + m2)) *| u2
+        v2 =    (2 * m1 / (m1 + m2)) *| u1 Vec.+ ((m2 - m1) / (m1 + m2)) *| u2
 
 
 harm :: Being -> Being -> (Being, Being)
