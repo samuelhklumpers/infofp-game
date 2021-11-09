@@ -5,19 +5,24 @@ import Data.Map ( Map, insert, insertWith, fromList, foldrWithKey, findWithDefau
 import qualified Data.Map as M
 
 import Graphics.Gloss.Interface.Pure.Game
+import Graphics.Gloss.Data.Vector
+import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
 import Control.Lens
 
 
 import Util
-
+import Shooting
 
 type KeyMap = Map Key KeyState
 emptyKM :: KeyMap
 emptyKM = M.empty
 
+--Event data constructors: 
+--EventKey Key KeyState Modifiers (Float, Float)	 
+--EventMotion (Float,Float)
 
 handleKeyState :: KeyMap -> Event -> KeyMap
-handleKeyState km (EventKey key s mod _) = insert key s km
+handleKeyState km (EventKey key s _ _) = insert key s km
 handleKeyState _ _ = error "handleKeyState got EventMotion or EventResize"
 
 setDefault :: Ord k => k -> v -> Map k v -> Map k v
@@ -37,15 +42,15 @@ dirMap :: Map Key R2
 dirMap = fromList [
         (controlU, e2),
         (controlR, e1),
-        (controlD, -e2),
-        (controlL, -e1)
+        (controlD, Vec.negate e2),
+        (controlL, Vec.negate e1)
     ]
 
 
 getAccel :: KeyMap -> R2
 getAccel km = foldrWithKey f v0 dirMap where
     f k v v' = case M.lookup k km of
-        Just Down -> v + v'
+        Just Down -> v Vec.+ v'
         _         -> v'
 
 getFire :: KeyMap -> Bool
