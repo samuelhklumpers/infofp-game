@@ -15,9 +15,12 @@ import qualified Data.Vector.Unboxed.Sized as VS
 import Control.Exception
 import System.Exit
 
-import World
+--import World
+import WorldInit
+import WorldExec
 import Statistics
 import Util
+import Drawing
 
 
 w :: Int
