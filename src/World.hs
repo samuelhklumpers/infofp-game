@@ -5,7 +5,6 @@ module World where
 
 import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss.Data.Picture
-import Data.Vector.Unboxed.Sized (fromTuple, toList)
 
 import Graphics.Gloss.Data.Vector
 import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
@@ -14,7 +13,7 @@ import GHC.TypeNats (KnownNat)
 import Data.Functor.Identity
 import Control.Lens
 import Control.Monad.State
-import Data.Map (empty)
+import Data.Map (empty, member)
 import System.Random
 import System.Random.Stateful
 
@@ -46,6 +45,7 @@ data World = World {
     _stats :: Stats' Identity,
     _spawns :: SpawnData,
     _randomizer :: StdGen,
+    _paused :: Bool,
     highscores :: [Stats' Identity]
 }
 makeLenses ''World
@@ -76,19 +76,32 @@ colorBeing race = case race of
 
 -- handlers
 handler :: Event -> World -> World
-handler e w = case e of
-    e'@EventKey {} -> keyMap %~ flip handleKeyState e' $ w
-    _              -> w
+handler = handleInput
+
+
+handleInput :: Event -> World -> World
+handleInput e = execState $ do
+    case e of
+        e'@(EventKey key _ _ _)   -> do
+            if member key dirMap then
+                keyMap %= flip handleKeyState e'
+            else
+                when (key == Char 'p') $ paused %= not
+        _                       -> return ()
+
 
 -- step
 step :: Float -> World -> World
-step dt =
-    fireStep dt .
-    damageStep .
-    physicsStep dt .
-    userStep dt .
-    scoreStep dt .
-    spawnStep dt
+step dt = execState $ do
+    p <- use paused
+
+    unless p $ do
+        modify $ fireStep dt
+        modify damageStep
+        modify $ physicsStep dt
+        modify $ userStep dt
+        modify $ scoreStep dt
+        modify $ spawnStep dt
 
 fireTimeout :: Float
 fireTimeout = 0.3
@@ -216,4 +229,4 @@ testWorld :: Frame -> IO World
 testWorld frame = do
     rng <- newStdGen
 
-    return $ World frame (Pointed testPlayer [testAsteroid]) emptyKM (Stats' 0.0) (SpawnData 0 (toRate 0.5) 0) rng []
+    return $ World frame (Pointed testPlayer [testAsteroid]) emptyKM (Stats' 0.0) (SpawnData 0 (toRate 0.5) 0) rng False []

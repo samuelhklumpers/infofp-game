@@ -21,6 +21,7 @@ emptyKM = M.empty
 --EventKey Key KeyState Modifiers (Float, Float)	 
 --EventMotion (Float,Float)
 
+
 handleKeyState :: KeyMap -> Event -> KeyMap
 handleKeyState km (EventKey key s _ _) = insert key s km
 handleKeyState _ _ = error "handleKeyState got EventMotion or EventResize"
