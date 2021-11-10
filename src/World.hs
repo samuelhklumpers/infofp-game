@@ -82,11 +82,11 @@ handler = handleInput
 handleInput :: Event -> World -> World
 handleInput e = execState $ do
     case e of
-        e'@(EventKey key _ _ _)   -> do
+        e'@(EventKey key s _ _)   -> do
             if member key dirMap then
                 keyMap %= flip handleKeyState e'
             else
-                when (key == Char 'p') $ paused %= not
+                when (key == Char 'p' && s == Down) $ paused %= not
         _                       -> return ()
 
 
