@@ -18,10 +18,12 @@ isDown _ = False
 
 handleInput :: Event -> World -> World
 handleInput e = execState $ zoom userIn $ do
-    let keyDown = isDown e 
+	w <- get
+	
+    let keyDown = isDown e in
 
     case e of
-        EventKey (MouseButton LeftButton) Down  _ mousepos -> firing .= Just mousepos
+        EventKey (MouseButton LeftButton) Down  _ mousepos -> firing .= Just (glospos2uspos w mousepos)
         EventKey (MouseButton LeftButton) Up    _ _        -> firing .= Nothing
         EventKey (Char c) _ _ _ -> case c of
             'p' -> pausing %= (keyDown /=) -- xor hihi
