@@ -25,6 +25,7 @@ import Util
 import Statistics
 import Drawing
 import Reaping 
+import Animations
 --import Spawner
 --Spawning
 
@@ -70,6 +71,10 @@ step dt = execState $ do
         modify $ userStep dt
         modify $ scoreStep dt
         modify $ spawnStep dt
+        modify $ anistep dt 
+
+anistep :: Float -> World -> World  
+anistep dt = execState $ do timedAnimations %= (animationsStep dt)
 
 
 {-
