@@ -21,6 +21,7 @@ import System.Random.Stateful
 import Being
 import Util
 import Statistics
+import Animations
 
 type Frame = (Float, Float)
 
@@ -57,6 +58,7 @@ data World = World {
     _stats :: Stats' Identity,
     _spawns :: SpawnData,
     _randomizer :: StdGen,
+    _animations :: Animations,
     highscores :: [Stats' Identity]
 }
 makeLenses ''World
@@ -72,3 +74,5 @@ instance Show World where
 
 spawnBeing :: Being -> State World ()
 spawnBeing b = beings <>= terminal b
+
+
