@@ -63,7 +63,7 @@ makeLenses ''World
 
 
 glospos2uspos :: World -> Vector -> Vector
-glospos2uspos w (x,y) = (h-x,y) where (h,b) = (w ^. frame)
+glospos2uspos w (x,y) = (b/2+x,h/2+y) where (b,h) = (w ^. frame)
 
 instance Show World where
     show w = ":(" -- put stuff here StateGenM doesn't print nice
