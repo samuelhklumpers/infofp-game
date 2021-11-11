@@ -9,19 +9,25 @@ import Control.Monad.State
 import Being
 import WorldInit
 
+shoottimeout :: TimeSinceLastShot
 shoottimeout = 0.3
-bulletspeed  = 22
+
+bulletspeed :: Float
+bulletspeed  = 200
+
+startPosMult :: Float
+startPosMult = 1.5
 
 
 shootBullet :: Being -> Vector -> Maybe Being
 --In principe kan alles schieten, leuk als je enemies maakt die turrets kunnen plaatsen op asteroids zodat asteroids op de player schieten. 
 shootBullet shooter targetpos  | time < shoottimeout = Nothing
-                               | otherwise    = Just(makeBeing Bullet startpos velocity) where
+                               | otherwise    = Just (makeBeing Bullet startpos velocity) where
                                    time       = shooter ^. timeSinceLastShot
                                    shooterpos = shooter ^. phys. pos
                                    direction  = normalizeV (targetpos Vec.- shooterpos)
-                                   velocity   = bulletspeed `mulSV` direction
-                                   startpos   = shooterpos  Vec.+ ((shooter ^. phys.radius) `mulSV` direction )
+                                   velocity   = bulletspeed `mulSV` direction Vec.+ shooter ^. phys . vel
+                                   startpos   = shooterpos  Vec.+ ((startPosMult * (shooter ^. phys.radius)) `mulSV` direction)
 
 playerShot :: World -> Maybe Being
 playerShot w = do

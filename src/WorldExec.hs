@@ -120,10 +120,10 @@ spawnStep dt = execState $ do
             roll <- uniformF 0.0 1.0
 
             if roll < rate then do
-                x <- uniformF 0.0 w
+                x <- uniformF (-w) w
                 vx <- uniformF (-20) 20
                 vy <- uniformF (-40) (-200)
-                let y = 600.0
+                let y = 300.0
                 return $ Just (x, y, vx, vy)
             else return Nothing
 
@@ -135,7 +135,7 @@ spawnStep dt = execState $ do
 -- replace with actual screen bounds if necessary
 isInBounds :: Frame -> Vector -> Bool
 isInBounds f v = let (x1, y1) = v in let (x2, y2) = f in
-    0 <= x1 && x1 <= x2 && 0 <= y1 && y1 <= y2
+    -x2 <= x1 && x1 <= x2 && -y2 <= y1 && y1 <= y2
 
 -- mark everybody that gets hit, e.g. _player hit by bullet -> set damage, asteroid hit by bullet -> exploding, _player hit by asteroid -> death animation 
 damageStep :: World -> World
@@ -192,10 +192,10 @@ collisionStep = beings %~ collisions
 
 -- tests
 testPlayer :: Being
-testPlayer = makeBeing (Player 0) (400 `mulSV` e1 Vec.+ 400 `mulSV` e2) v0
+testPlayer = makeBeing (Player 0) v0 v0
 
-testAsteroid :: Being
-testAsteroid = makeBeing Asteroid (400 `mulSV` e1 Vec.+ 100 `mulSV` e2) v0
+--testAsteroid :: Being
+--testAsteroid = makeBeing Asteroid (400 `mulSV` e1 Vec.+ 100 `mulSV` e2) v0
 
 {-
 testEnemy :: Being
@@ -209,4 +209,4 @@ testWorld :: Frame -> IO World
 testWorld frame = do
     rng <- newStdGen
 
-    return $ World frame (Pointed testPlayer [testAsteroid]) blankInput (Stats' 0.0) (SpawnData 0 (toRate 0.5) 0) rng []
+    return $ World frame (Pointed testPlayer []) blankInput (Stats' 0.0) (SpawnData 0 (toRate 0.5) 0) rng []

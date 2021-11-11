@@ -29,7 +29,7 @@ w = 800
 h = 800
 
 windowFrame :: (Float, Float)
-windowFrame = (fromIntegral w, fromIntegral h)
+windowFrame = (fromIntegral w / 2, fromIntegral h / 2)
 
 
 window :: Display
@@ -45,8 +45,8 @@ initWorld :: IO World
 initWorld = testWorld windowFrame
 
 
-screenTransform :: Picture -> Picture
-screenTransform = translate (-fromIntegral w / 2) (-fromIntegral h / 2)
+--screenTransform :: Picture -> Picture
+--screenTransform = translate (-fromIntegral w / 2) (-fromIntegral h / 2)
 
 
 stepHandle :: Float -> World -> IO World
@@ -73,7 +73,7 @@ main = do
 
     world <- initWorld
 
-    playIO window background fps (world {highscores = scores}) (return . screenTransform . draw) ((return .) . handler) stepHandle
+    playIO window background fps (world {highscores = scores}) (return . draw) ((return .) . handler) stepHandle
 
 -- old comments from before giving up on capturing window closing
     -- gloss doesn't give us our Worlds back when it finishes, so I don't see how I'm supposed to get things back in forced exits..

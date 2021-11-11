@@ -23,7 +23,8 @@ handleInput e = execState $ do
 
     zoom userIn $ do
         case e of
-            EventKey (MouseButton LeftButton) Down  _ mousepos -> firing .= Just (glospos2uspos w mousepos)
+            EventMotion newpos -> firing %= (>> return newpos)
+            EventKey (MouseButton LeftButton) Down  _ mousepos -> firing .= Just mousepos
             EventKey (MouseButton LeftButton) Up    _ _        -> firing .= Nothing
             EventKey (Char c) _ _ _ -> case c of
                 'p' -> pausing %= (keyDown /=) -- xor hihi

@@ -166,7 +166,12 @@ doCollisions bs = runST $ do
 
 makeBeing :: Race -> Vector -> Vector -> Being
 makeBeing r x v = case r of
-    Player t    -> Being (Phys x v 1.0 16) r 2 0
-    Enemy t     -> Being (Phys x v 1.0 16) r 2 0
-    Asteroid    -> Being (Phys x v 1.0 24) r 2 0
-    Bullet      -> Being (Phys x v 1.0 8)  r 2 0
+    Player t    -> Being (Phys x v baseMass 16) r baseHp lastFire
+    Enemy t     -> Being (Phys x v baseMass 16) r baseHp lastFire
+    Asteroid    -> Being (Phys x v baseMass 24) r baseHp lastFire
+    Bullet      -> Being (Phys x v baseMass 8)  r baseHp lastFire
+    where
+        baseHp = 1
+        lastFire = 0
+        baseMass = 1.0
+
