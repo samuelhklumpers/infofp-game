@@ -30,6 +30,7 @@ type Firing = Maybe Vector
 data SpawnData = SpawnData {_timeSinceLast :: Float, _asteroidRate :: Float, _enemyRate :: Float} deriving Show
 makeLenses ''SpawnData
 
+
 data MotionControl = MotionControl {
     _motionU :: Bool,
     _motionR :: Bool,

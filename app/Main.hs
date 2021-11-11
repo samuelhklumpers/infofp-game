@@ -49,13 +49,12 @@ makeStats xs = blankStats & attempt .~ Identity (length xs)
 
 main :: IO ()
 main = do
-    world <- initWorld
-    
     scores <- fromMaybe [] <$> (jload "scores.json" :: IO (Maybe [Stats]))
-    let world' = world & highscores .~ scores
-    let world'' = world & stats .~ makeStats scores
 
-    playIO window background fps world'' (return . draw) ((return .) . handler) step
+    let stats' = makeStats scores
+    world <- testWorld windowFrame stats' scores 
+    
+    playIO window background fps world (return . draw) ((return .) . handler) step
 
 
 -- old comments from before giving up on capturing window closing

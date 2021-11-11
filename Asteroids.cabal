@@ -34,6 +34,7 @@ library
       Player
       Reaping
       Shooting
+      Spawning
       Statistics
       Util
       WorldExec
