@@ -15,16 +15,20 @@ handleInput (EventKey (Char 'w') _ _ _) = controlU
 handleInput (EventKey (Char 'a') _ _ _) = controlL
 handleInput (EventKey (Char 's') _ _ _) = controlD
 handleInput (EventKey (Char 'd') _ _ _) = controlR
+handleInput _ = id
 
 pause :: World -> World
-pause = do paused %= not 
+pause = execState $ do paused %= not 
 
 controlPlayer :: Vector -> World -> World
-controlPlayer v = do beings.player.phys.vel +~ v
+controlPlayer v = do beings.player.phys.vel %~ (Vec.+ v)
 
 controlU = controlPlayer (0,1)
 controlD = controlPlayer (0,-1)
 controlL = controlPlayer (-1,0)
 controlR = controlPlayer (1,0)
 
-shoot = undefined
+shoot :: Vector -> World -> World
+shoot target  = execState $ do 
+	p <- use (beings.player)
+	spawnBeing (shootBullet p  target)
