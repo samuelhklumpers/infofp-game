@@ -126,7 +126,7 @@ harm a b = case a ^. race of
         Player {} -> error "this game was supposed to be single-player..."
         _         -> (health -~ 1 $ a, health -~ 1 $ b)
     Bullet {} -> case b ^. race of
-        Bullet {} -> (a, b)
+        --Bullet {} -> (a, b)
         _         -> (health -~ 1 $ a, health -~ 1 $ b)
     Asteroid {} -> case b ^. race of
         Player {} -> harm b a

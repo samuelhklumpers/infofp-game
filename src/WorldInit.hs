@@ -58,7 +58,7 @@ data World = World {
     _stats :: Stats' Identity,
     _spawns :: SpawnData,
     _randomizer :: StdGen,
-    _animations :: Animations,
+    _timedAnimations :: TimedAnimations,
     highscores :: [Stats' Identity]
 }
 makeLenses ''World

@@ -7,15 +7,15 @@ import Graphics.Gloss.Data.Picture
 import Graphics.Gloss.Data.Vector
 import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
 import Graphics.Gloss.Data.Color (greyN)
+import Animations
 
 
 
 
-
--- drawing
 draw :: World -> Picture
-draw w = Pictures $ map drawBeing b
+draw w = Pictures $ (map drawBeing b)  ++ (map drawTimedAnimation (_timedAnimations w))
     where b = Being.toList $ _beings w
+          --animes = _animes w
 
 drawBeing :: Being -> Picture
 drawBeing Being {_phys = phys, _race = race}
@@ -31,3 +31,5 @@ colorBeing race = case race of
     Enemy _     -> red
     Asteroid    -> greyN 0.5
     Bullet      -> yellow
+
+

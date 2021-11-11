@@ -15,7 +15,7 @@ import System.Random
 import System.Random.Stateful
 
 import Being
-
+import Animations
 import WorldInit
 
 -- replace with actual screen bounds if necessary
@@ -29,11 +29,14 @@ damageStep = execState $ do
     bs <- uses beings Being.toList
     fr <- use frame
 
-    let bs' = filter (isInBounds fr . (^. phys . pos)) bs -- maybe prevent deleting the player
-    let bs'' = filter ((>0) . (^. health)) bs'
-    let deathlist = filter ((<=0).(^.health)) bs'
-    
+    let bs'        = filter (isInBounds fr . (^. phys . pos)) bs -- maybe prevent deleting the player
+    let bs''       = filter ((>0) . (^. health)) bs'
+    let deathlist  = filter ((<=0).(^.health)) bs'
+    let corpselist = map death_to_animation deathlist
+    timedAnimations <>= (corpselist)
 
     beings .= Being.fromList bs''
 
-
+implosioncolor = red
+death_to_animation :: Being -> TimedAnimation
+death_to_animation b = (Implosion implosioncolor (b^.phys.pos) r, r) where r = b^.phys.radius
