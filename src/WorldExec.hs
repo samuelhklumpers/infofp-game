@@ -20,6 +20,7 @@ import System.Random.Stateful
 import WorldInit
 import Being
 import Control2
+import Shooting
 import Util
 import Statistics
 import Drawing
@@ -32,10 +33,10 @@ spawnTick :: Float
 spawnTick = 0.1 -- seconds
 
 toRate :: Float -> Float
-toRate interval = perTick where 
+toRate interval = perTick where
     perSecond = 1 / interval
     perTick = perSecond * spawnTick
-    
+
 -- rates as in T ~ Exp(1/t), t in spawnTicks
 
 spawnBeing :: Being -> State World ()
@@ -64,7 +65,7 @@ step dt = execState $ do
     p <- use (userIn . pausing)
 
     unless p $ do
-        modify $ fireStep 
+        modify fireStep
         modify damageStep
         modify $ physicsStep dt
         modify $ userStep dt
@@ -72,14 +73,14 @@ step dt = execState $ do
         modify $ spawnStep dt
 
 fireStep :: World -> World
-fireStep = execState $ do 
-			f <- use $ userIn.firing
-			p <- use $ beings.player
-            case f of 
-              NoShots     -> return ()
-              Shot target -> case (shootBullet p target) of 
-			                     Nothing     -> return ()
-							     Just bullet ->  spawnBeing (bullet) 
+fireStep = execState $ do
+    f <- use $ userIn.firing
+    p <- use $ beings.player
+    case f of
+        NoShots     -> return ()
+        Shot target -> case shootBullet p target of
+            Nothing     -> return ()
+            Just bullet -> spawnBeing bullet
 
 {-
 
@@ -184,7 +185,7 @@ getAccel (MotionControl u r d l) =
     toggleAccel e1 r $
     toggleAccel (Vec.negate e2) d $
     toggleAccel (Vec.negate e1) l v0
-    
+
 
 userStep :: Float -> World -> World
 userStep dt w = beings . player . phys . vel %~ (Vec.+ playerAccel `mulSV` a) $ w
