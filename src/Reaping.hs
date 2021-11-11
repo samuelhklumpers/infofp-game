@@ -39,4 +39,4 @@ damageStep = execState $ do
 
 implosioncolor = red
 death_to_animation :: Being -> TimedAnimation
-death_to_animation b = (Implosion implosioncolor (b^.phys.pos) r, r) where r = b^.phys.radius
+death_to_animation b = (Implosion implosioncolor (b^.phys.pos), r) where r = b^.phys.radius
