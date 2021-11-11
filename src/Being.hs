@@ -25,6 +25,8 @@ type Mass = Float
 type Radius = Float
 type Timeout = Float
 type Health = Int
+type TimeSinceLastShot = Float
+
 
 data Phys = Phys {_pos :: Vector, _vel :: Vector, _mass :: Mass, _radius :: Radius} deriving Show
 makeLenses ''Phys
@@ -33,7 +35,7 @@ makeLenses ''Phys
 data Race = Player Timeout | Asteroid | Bullet | Enemy Timeout deriving Show
 
 -- undo Race, make GADT? --> type guarantee we don't treat a player as an asteroid
-data Being = Being {_phys :: Phys, _race :: Race, _health :: Health} deriving Show
+data Being = Being {_phys :: Phys, _race :: Race, _health :: Health, _timeSinceLastShot :: TimeSinceLastShot} deriving Show
 makeLenses ''Being
 
 
@@ -164,7 +166,7 @@ doCollisions bs = runST $ do
 
 makeBeing :: Race -> Vector -> Vector -> Being
 makeBeing r x v = case r of
-    Player t    -> Being (Phys x v 1.0 16) r 2
-    Enemy t     -> Being (Phys x v 1.0 16) r 2
-    Asteroid    -> Being (Phys x v 1.0 24) r 2
-    Bullet      -> Being (Phys x v 1.0 8)  r 2
+    Player t    -> Being (Phys x v 1.0 16) r 2 0
+    Enemy t     -> Being (Phys x v 1.0 16) r 2 0
+    Asteroid    -> Being (Phys x v 1.0 24) r 2 0
+    Bullet      -> Being (Phys x v 1.0 8)  r 2 0
