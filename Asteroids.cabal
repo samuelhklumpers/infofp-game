@@ -26,9 +26,9 @@ source-repository head
 
 library
   exposed-modules:
+      Animations
       Being
       Control2
-      Controls
       Drawing
       Enemies
       Player

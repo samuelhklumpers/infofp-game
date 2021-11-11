@@ -1,4 +1,4 @@
-module Shooting where 
+module Shooting where
 
 import Graphics.Gloss.Data.Vector
 import Graphics.Gloss.Interface.IO.Interact
@@ -10,25 +10,7 @@ import Being
 import WorldInit
 
 shoottimeout = 0.3
-bulletspeed= 22
---data Firing = NoShots | Shot Vector
-
-{-
-processfire :: Event -> Firing
-processfire (EventKey (MouseButton LeftButton ) _ _ mousepos) = Shot mousepos
-processfire _ = NoShots
--}
-
-{-
-shootBullet :: Being -> Vector -> Being
-shootBullet shooter targetpos = makeBeing Bullet startpos velocity where
-                                 shooterpos = shooter ^. phys. pos
-                                 direction  = normalizeV (targetpos Vec.- shooterpos)
-                                 velocity   = bulletspeed `mulSV` direction
-                                 startpos   = shooterpos  Vec.+ ((shooter ^. phys.radius) `mulSV` direction )
-                                
--}
-
+bulletspeed  = 22
 
 
 shootBullet :: Being -> Vector -> Maybe Being
@@ -42,20 +24,15 @@ shootBullet shooter targetpos  | time < shoottimeout = Nothing
                                    startpos   = shooterpos  Vec.+ ((shooter ^. phys.radius) `mulSV` direction )
 
 playerShot :: World -> Maybe Being
-playerShot w = do  target <- (w ^.userIn.firing)
-                   bullet <- shootBullet (w^.beings.player) target
-                   return bullet
+playerShot w = do
+    target <- w ^. userIn . firing
+    shootBullet (w ^. beings . player) target
 
 fireStep :: Float -> World -> World
-fireStep dt = execState $ do    
-                        w <- get
-                        case (playerShot w) of 
-                          Nothing     -> ( (beings.player.timeSinceLastShot) +~ dt)
-                          Just bullet -> do ((beings.player.timeSinceLastShot).= 0)
-                                            spawnBeing bullet
-                          
-                    
-                        
-                        
-
-
+fireStep dt = execState $ do
+    w <- get
+    case playerShot w of
+        Nothing     -> beings . player . timeSinceLastShot += dt
+        Just bullet -> do
+            beings . player . timeSinceLastShot .= 0
+            spawnBeing bullet

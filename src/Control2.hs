@@ -21,8 +21,8 @@ handleInput e = execState $ zoom userIn $ do
     let keyDown = isDown e 
 
     case e of
-        EventKey (MouseButton LeftButton) Down  _ mousepos -> firing .= Shot mousepos
-        EventKey (MouseButton LeftButton) Up    _ _        -> firing .= NoShots
+        EventKey (MouseButton LeftButton) Down  _ mousepos -> firing .= Just mousepos
+        EventKey (MouseButton LeftButton) Up    _ _        -> firing .= Nothing
         EventKey (Char c) _ _ _ -> case c of
             'p' -> pausing %= (keyDown /=) -- xor hihi
             'w' -> moving . motionU .= keyDown
