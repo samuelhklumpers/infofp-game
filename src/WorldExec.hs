@@ -28,7 +28,7 @@ import Spawning
 import Drawing
 import Reaping 
 import Animations
-import Spawner
+import Spawning
 
 
 
@@ -47,7 +47,7 @@ handleInput e = execState $ do
         _                       -> return ()
 -}
 
-
+{-
 -- step
 step :: Float -> World -> World
 step dt = execState $ do
@@ -65,6 +65,7 @@ step dt = execState $ do
 anistep :: Float -> World -> World  
 anistep dt = execState $ do timedAnimations %= (animationsStep dt)
 
+-}
 
 {-
 
@@ -105,8 +106,14 @@ step dt = execStateT $ do
             modify $ physicsStep dt
             modify damageStep
             modify $ scoreStep dt
+            modify $ anistep dt 
         PlayerDied -> gameEndStep
         _ -> return ()
+
+anistep :: Float -> World -> World  
+anistep dt = execState $ do timedAnimations %= (animationsStep dt)
+
+            
 
 
 gameEndStep :: StateT World IO ()
