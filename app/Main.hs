@@ -44,36 +44,18 @@ fps = 30
 initWorld :: IO World
 initWorld = testWorld windowFrame
 
-
---screenTransform :: Picture -> Picture
---screenTransform = translate (-fromIntegral w / 2) (-fromIntegral h / 2)
-
-
-stepHandle :: Float -> World -> IO World
-stepHandle dt w = return $ step dt w
-    
-    {-
-    do
-    case M.lookup (SpecialKey KeyEsc) (w ^. keyMap) of
-        Just Down -> do
-            let score = w ^. stats
-            let scores = highscores w
-
-            print "saving scores.."
-            jdump (score:scores) "scores.json" -- it seems that this somehow locks the file even after gloss dies..
-
-            exitSuccess -- TODO enter highscore screen here
-        _ -> do
-            return $ step dt w
-    -}
+makeStats :: [Stats] -> Stats
+makeStats xs = blankStats & attempt .~ Identity (length xs)
 
 main :: IO ()
 main = do
-    scores <- fromMaybe [] <$> (jload "scores.json" :: IO (Maybe [Stats' Identity]))
+    scores <- fromMaybe [] <$> (jload "scores.json" :: IO (Maybe [Stats]))
 
-    world <- initWorld
+    let stats' = makeStats scores
+    world <- testWorld windowFrame stats' scores 
+    
+    playIO window background fps world (return . draw) ((return .) . handler) step
 
-    playIO window background fps (world {highscores = scores}) (return . draw) ((return .) . handler) stepHandle
 
 -- old comments from before giving up on capturing window closing
     -- gloss doesn't give us our Worlds back when it finishes, so I don't see how I'm supposed to get things back in forced exits..
@@ -84,9 +66,3 @@ main = do
     -- update: it's not an ExitCode, let's catch everything
     -- update 2: closing the window doesn't even raise an Exception..
     -- ps: i'm well aware that IORef is about as bad as unsafeCoerce#
-
-
-debugHandler :: Event -> World -> IO World
-debugHandler e w = do
-    print e
-    return w
