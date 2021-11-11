@@ -27,13 +27,16 @@ source-repository head
 library
   exposed-modules:
       Being
+      Control2
       Controls
+      Drawing
       Enemies
       Player
       Shooting
       Statistics
       Util
-      World
+      WorldExec
+      WorldInit
   other-modules:
       Paths_Asteroids
   hs-source-dirs:

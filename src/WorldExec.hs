@@ -13,13 +13,13 @@ import GHC.TypeNats (KnownNat)
 import Data.Functor.Identity
 import Control.Lens
 import Control.Monad.State
-import Data.Map (empty, member)
+import Data.Map (empty, member, Map)
 import System.Random
 import System.Random.Stateful
 
 import WorldInit
 import Being
-import Controls
+import Control2
 import Util
 import Statistics
 import Drawing
@@ -38,20 +38,14 @@ toRate interval = perTick where
     
 -- rates as in T ~ Exp(1/t), t in spawnTicks
 
-
 spawnBeing :: Being -> State World ()
 spawnBeing b = beings <>= terminal b
 
-
-
-
-
-
 -- handlers
 handler :: Event -> World -> World
-handler = handleInput
+handler = Control2.handleInput
 
-
+{-
 handleInput :: Event -> World -> World
 handleInput e = execState $ do
     case e of
@@ -61,12 +55,13 @@ handleInput e = execState $ do
             else
                 when (key == Char 'p' && s == Down) $ paused %= not
         _                       -> return ()
+-}
 
 
 -- step
 step :: Float -> World -> World
 step dt = execState $ do
-    p <- use paused
+    p <- use (userIn . pausing)
 
     unless p $ do
         modify $ fireStep dt
@@ -87,7 +82,7 @@ fireStep dt = execState $ do
         Player t -> do
             let t' = min (t + dt) fireTimeout
 
-            fire <- uses keyMap getFire
+            fire <- use (userIn . firing)
             if fire && t' >= fireTimeout then do
                 beings . player . race .= Player 0
                 ph <- use $ beings . player . phys
@@ -159,15 +154,26 @@ physicsStep dt =
 scoreStep :: Float -> World -> World
 scoreStep dt = stats . survived +~ Identity dt -- I hate Identity
 
-
+-- put some upper limit on vel?
 playerAccel :: Float
 playerAccel = 8
 
--- put some upper limit on vel?
+toggleAccel :: Vector -> Bool -> Vector -> Vector
+toggleAccel v b w
+    | b         = v Vec.+ w
+    | otherwise = w
+
+getAccel :: MotionControl -> Vector
+getAccel (MotionControl u r d l) =
+    toggleAccel e2 u $
+    toggleAccel e1 r $
+    toggleAccel (Vec.negate e2) d $
+    toggleAccel (Vec.negate e1) l v0
+    
 
 userStep :: Float -> World -> World
 userStep dt w = beings . player . phys . vel %~ (Vec.+ playerAccel `mulSV` a) $ w
-    where a = getAccel (w ^. keyMap)
+    where a = getAccel (w ^. userIn . moving)
 
 
 -- do physics movement, ignoring gravity, collisions, or other sources of acceleration
@@ -198,4 +204,4 @@ testWorld :: Frame -> IO World
 testWorld frame = do
     rng <- newStdGen
 
-    return $ World frame (Pointed testPlayer [testAsteroid]) emptyKM (Stats' 0.0) (SpawnData 0 (toRate 0.5) 0) rng False []
+    return $ World frame (Pointed testPlayer [testAsteroid]) blankInput (Stats' 0.0) (SpawnData 0 (toRate 0.5) 0) rng []
