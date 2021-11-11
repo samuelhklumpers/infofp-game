@@ -41,9 +41,6 @@ background = black
 fps :: Int
 fps = 30
 
-initWorld :: IO World
-initWorld = testWorld windowFrame
-
 makeStats :: [Stats] -> Stats
 makeStats xs = blankStats & attempt .~ Identity (length xs)
 

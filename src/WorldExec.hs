@@ -55,6 +55,7 @@ gameEndStep = do
     let newScores = _stats w:w ^. highscores
     lift $ jdump newScores "scores.json"
 
+    highscores .= newScores
     gameState .= GameOver
 
 physicsStep :: Float -> World -> World

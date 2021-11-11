@@ -31,7 +31,6 @@ library
       Control2
       Drawing
       Enemies
-      Player
       Reaping
       Shooting
       Spawning

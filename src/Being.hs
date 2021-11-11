@@ -28,14 +28,14 @@ type Health = Int
 type TimeSinceLastShot = Float
 
 
-data Phys = Phys {_pos :: Vector, _vel :: Vector, _mass :: Mass, _radius :: Radius} deriving Show
+data Phys = Phys {_pos :: Vector, _vel :: Vector, _mass :: Mass, _radius :: Radius} deriving (Eq, Show)
 makeLenses ''Phys
 
 
-data Race = Player Timeout | Asteroid | Bullet | Enemy Timeout deriving Show
+data Race = Player Timeout | Asteroid | Bullet | Enemy Timeout deriving (Eq, Show)
 
 -- undo Race, make GADT? --> type guarantee we don't treat a player as an asteroid
-data Being = Being {_phys :: Phys, _race :: Race, _health :: Health, _timeSinceLastShot :: TimeSinceLastShot} deriving Show
+data Being = Being {_phys :: Phys, _race :: Race, _health :: Health, _timeSinceLastShot :: TimeSinceLastShot} deriving (Eq, Show)
 makeLenses ''Being
 
 

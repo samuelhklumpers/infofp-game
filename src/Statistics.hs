@@ -37,7 +37,10 @@ blankStats = Stats' 0.0 0
 
 instance FromJSON (Stats' Maybe)
 instance ToJSON (Stats' Identity)
-deriving instance Show (Stats' Identity)
+
+instance Show (Stats' Identity) where
+    show s = "Attempt: "    ++ show (runIdentity $ _attempt s) ++
+             ", survived: " ++ show (runIdentity $ _survived s)
 
 
 instance Default Stats' where

@@ -1,4 +1,4 @@
-module Reaping where 
+module Reaping where
 
 import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss.Data.Picture
@@ -23,9 +23,11 @@ isInBounds :: Frame -> Vector -> Bool
 isInBounds f v = let (x1, y1) = v in let (x2, y2) = f in
     -x2 <= x1 && x1 <= x2 && -y2 <= y1 && y1 <= y2
 
+
 -- mark everybody that gets hit, e.g. _player hit by bullet -> set damage, asteroid hit by bullet -> exploding, _player hit by asteroid -> death animation 
 damageStep :: World -> World
 damageStep = execState $ do
+    player <- use (beings . player)
     bs <- uses beings Being.toList
     fr <- use frame
 
@@ -33,7 +35,11 @@ damageStep = execState $ do
     let bs''       = filter ((>0) . (^. health)) bs'
     let deathlist  = filter ((<=0).(^.health)) bs'
     let corpselist = map death_to_animation deathlist
-    timedAnimations <>= (corpselist)
+
+    timedAnimations <>= corpselist
+
+    when (player `elem` deathlist) $ do
+        gameState .= PlayerDied
 
     beings .= Being.fromList bs''
 

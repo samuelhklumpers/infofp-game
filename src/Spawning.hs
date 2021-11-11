@@ -12,14 +12,14 @@ spawnTick :: Float
 spawnTick = 0.1 -- seconds
 
 -- rates as in T ~ Exp(1/t), t in spawnTicks
-toRate :: Float -> Float
+toRate :: Float -> Float -- TODO I think this doesn't mean what I think it does
 toRate interval = perTick where
     perSecond = 1 / interval
     perTick = perSecond * spawnTick
 
 
 baseSpawnRates :: SpawnData
-baseSpawnRates = SpawnData 0 (toRate 2.0) (toRate 4.0)
+baseSpawnRates = SpawnData 0 (toRate 2.0) (toRate 2.0)
 
 
 spawnStep :: Float -> World -> World

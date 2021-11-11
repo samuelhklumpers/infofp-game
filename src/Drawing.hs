@@ -8,14 +8,31 @@ import Graphics.Gloss.Data.Vector
 import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
 import Graphics.Gloss.Data.Color (greyN)
 import Animations
+import Control.Monad.State
+import Control.Lens
 
 
+writeScreen :: String -> Picture -- some random numbers, gloss isn't too transparent on this stuff
+writeScreen str = scale 0.12 0.12 $ translate (-400) (-200) $ Color white $ Text str
 
+writeList :: [String] -> Picture
+writeList = foldr writeAndShift Blank
+
+writeAndShift :: String -> Picture -> Picture
+writeAndShift str old = Pictures [writeScreen str, translate 0 (-40) old]
 
 draw :: World -> Picture
-draw w = Pictures $ (map drawBeing b)  ++ (map drawTimedAnimation (_timedAnimations w))
-    where b = Being.toList $ _beings w
-          --animes = _animes w
+draw w = Pictures $ flip execState [] $ do
+        let b = Being.toList $ _beings w
+
+        put $ map drawBeing b  ++ map drawTimedAnimation (_timedAnimations w)
+
+        case w ^. gameState of
+            Pausing ->    modify (writeScreen "Paused":)
+            GameOver ->   do
+                let scores = w ^. highscores
+                modify (writeList (map show scores):)
+            _ ->          return ()
 
 drawBeing :: Being -> Picture
 drawBeing Being {_phys = phys, _race = race}
