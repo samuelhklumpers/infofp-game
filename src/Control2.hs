@@ -18,9 +18,8 @@ isDown _ = False
 
 handleInput :: Event -> World -> World
 handleInput e = execState $ zoom userIn $ do
-	w <- get
-	
-    let keyDown = isDown e in
+    w <- get
+    let keyDown = isDown e
 
     case e of
         EventKey (MouseButton LeftButton) Down  _ mousepos -> firing .= Just (glospos2uspos w mousepos)
