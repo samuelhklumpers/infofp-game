@@ -21,9 +21,12 @@ import System.Random.Stateful
 import Being
 import Util
 import Statistics
-import Shooting
+--import Shooting
 
 type Frame = (Float, Float)
+
+type Firing = Maybe Vector
+
 data SpawnData = SpawnData {_timeSinceLast :: Float, _asteroidRate :: Float, _enemyRate :: Float} deriving Show
 makeLenses ''SpawnData
 
@@ -46,7 +49,7 @@ blankMotion :: MotionControl
 blankMotion = MotionControl False False False False
 
 blankInput :: UserInput
-blankInput = UserInput False NoShots blankMotion
+blankInput = UserInput False Nothing blankMotion
 
 data World = World {
     _frame :: Frame,
@@ -61,6 +64,12 @@ makeLenses ''World
 
 instance Show World where
     show w = ":(" -- put stuff here StateGenM doesn't print nice
+
+
+spawnBeing :: Being -> State World ()
+spawnBeing b = beings <>= terminal b
+
+
 
 {-
 
