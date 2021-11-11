@@ -21,6 +21,7 @@ import System.Random.Stateful
 import Being
 import Util
 import Statistics
+import Shooting
 
 type Frame = (Float, Float)
 data SpawnData = SpawnData {_timeSinceLast :: Float, _asteroidRate :: Float, _enemyRate :: Float} deriving Show
@@ -36,7 +37,7 @@ makeLenses ''MotionControl
 
 data UserInput = UserInput {
     _pausing :: Bool,
-    _firing  :: Bool,
+    _firing  :: Firing,
     _moving  :: MotionControl
 }
 makeLenses ''UserInput
@@ -45,7 +46,7 @@ blankMotion :: MotionControl
 blankMotion = MotionControl False False False False
 
 blankInput :: UserInput
-blankInput = UserInput False False blankMotion
+blankInput = UserInput False NoShots blankMotion
 
 data World = World {
     _frame :: Frame,
