@@ -24,6 +24,7 @@ import Shooting
 import Util
 import Statistics
 import Drawing
+import Reaping 
 --import Spawner
 --Spawning
 
@@ -131,7 +132,7 @@ spawnStep dt = execState $ do
             Just (x, y, vx, vy) -> spawnBeing (makeBeing Asteroid (x, y) (vx, vy))
             Nothing -> return ()
 
-
+{-
 -- replace with actual screen bounds if necessary
 isInBounds :: Frame -> Vector -> Bool
 isInBounds f v = let (x1, y1) = v in let (x2, y2) = f in
@@ -147,7 +148,7 @@ damageStep = execState $ do
     let bs'' = filter ((>0) . (^. health)) bs'
 
     beings .= Being.fromList bs''
-
+-}
 
 physicsStep :: Float -> World -> World
 physicsStep dt =
@@ -209,4 +210,4 @@ testWorld :: Frame -> IO World
 testWorld frame = do
     rng <- newStdGen
 
-    return $ World frame (Pointed testPlayer []) blankInput (Stats' 0.0) (SpawnData 0 (toRate 0.5) 0) rng []
+    return $ World frame (Pointed testPlayer []) blankInput (Stats' 0.0) (SpawnData 0 (toRate 0.5) 0) rng [] []
