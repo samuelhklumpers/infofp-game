@@ -38,17 +38,19 @@ data MotionControl = MotionControl {
 makeLenses ''MotionControl
 
 data UserInput = UserInput {
-    _pausing :: Bool,
     _firing  :: Firing,
     _moving  :: MotionControl
 }
 makeLenses ''UserInput
 
+data GameState = Playing | Pausing | PlayerDied | GameOver | Exiting
+
+
 blankMotion :: MotionControl
 blankMotion = MotionControl False False False False
 
 blankInput :: UserInput
-blankInput = UserInput False Nothing blankMotion
+blankInput = UserInput Nothing blankMotion
 
 data World = World {
     _frame :: Frame,
@@ -57,17 +59,14 @@ data World = World {
     _stats :: Stats' Identity,
     _spawns :: SpawnData,
     _randomizer :: StdGen,
-    highscores :: [Stats' Identity]
+    _gameState :: GameState,
+    _highscores :: [Stats' Identity]
 }
 makeLenses ''World
 
 
---glospos2uspos :: World -> Vector -> Vector
---glospos2uspos w (x,y) = (h-x,y) where (h,b) = (w ^. frame)
-
 instance Show World where
     show w = ":(" -- put stuff here StateGenM doesn't print nice
-
 
 
 spawnBeing :: Being -> State World ()

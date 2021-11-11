@@ -13,6 +13,7 @@ import GHC.TypeNats (KnownNat)
 import Data.Functor.Identity
 import Control.Lens
 import Control.Monad.State
+import Control.Monad
 import Data.Map (empty, member, Map)
 import System.Random
 import System.Random.Stateful
@@ -24,81 +25,45 @@ import Shooting
 import Util
 import Statistics
 import Drawing
---import Spawner
---Spawning
-
 
 
 spawnTick :: Float
 spawnTick = 0.1 -- seconds
 
+-- rates as in T ~ Exp(1/t), t in spawnTicks
 toRate :: Float -> Float
 toRate interval = perTick where
     perSecond = 1 / interval
     perTick = perSecond * spawnTick
 
--- rates as in T ~ Exp(1/t), t in spawnTicks
-
-
--- handlers
 handler :: Event -> World -> World
 handler = Control2.handleInput
 
-{-
-handleInput :: Event -> World -> World
-handleInput e = execState $ do
-    case e of
-        e'@(EventKey key s _ _)   -> do
-            if member key dirMap then
-                keyMap %= flip handleKeyState e'
-            else
-                when (key == Char 'p' && s == Down) $ paused %= not
-        _                       -> return ()
--}
+step :: Float -> World -> IO World
+step dt = execStateT $ do
+    gs <- use gameState
 
-
--- step
-step :: Float -> World -> World
-step dt = execState $ do
-    p <- use (userIn . pausing)
-
-    unless p $ do
-        modify $ fireStep dt
-        modify damageStep
-        modify $ physicsStep dt
-        modify $ userStep dt
-        modify $ scoreStep dt
-        modify $ spawnStep dt
-
-
-{-
-
-fireTimeout :: Float
-fireTimeout = 0.3
-
-
-fireStep :: Float -> World -> World
-
-
-fireStep dt = execState $ do
-    r <- use $ beings . player . race
-
-    case r of
-        Player t -> do
-            let t' = min (t + dt) fireTimeout
-
-            fire <- use (userIn . firing)
-            if fire && t' >= fireTimeout then do
-                beings . player . race .= Player 0
-                ph <- use $ beings . player . phys
-                let x = ph ^. pos
-                let v = ph ^. vel
-                let rad = ph ^. radius
-                spawnBeing (makeBeing Bullet (x Vec.+ (2 * rad) `mulSV` e2) (v Vec.+ 200 `mulSV` e2))
-            else
-                beings . player . race .= Player t'
+    case gs of
+        Playing -> do
+            modify $ spawnStep dt
+            modify $ fireStep dt
+            modify $ userStep dt
+            modify $ physicsStep dt
+            modify damageStep
+            modify $ scoreStep dt
+        PlayerDied -> gameEndStep
         _ -> return ()
--}
+
+
+gameEndStep :: StateT World IO ()
+gameEndStep = do
+    w <- get
+
+    let newScores = _stats w:w ^. highscores
+    lift $ jdump newScores "scores.json"
+
+    gameState .= GameOver
+
 
 uniformF :: Float -> Float -> State StdGen Float
 uniformF l h = state $ uniformR (l, h)
@@ -132,10 +97,10 @@ spawnStep dt = execState $ do
             Nothing -> return ()
 
 
--- replace with actual screen bounds if necessary
 isInBounds :: Frame -> Vector -> Bool
 isInBounds f v = let (x1, y1) = v in let (x2, y2) = f in
     -x2 <= x1 && x1 <= x2 && -y2 <= y1 && y1 <= y2
+
 
 -- mark everybody that gets hit, e.g. _player hit by bullet -> set damage, asteroid hit by bullet -> exploding, _player hit by asteroid -> death animation 
 damageStep :: World -> World
@@ -152,14 +117,13 @@ damageStep = execState $ do
 physicsStep :: Float -> World -> World
 physicsStep dt =
     collisionStep .
-    freeFallStep dt -- .
-    -- otherStep .
-    -- etc
+    freeFallStep dt
+
 
 scoreStep :: Float -> World -> World
-scoreStep dt = stats . survived +~ Identity dt -- I hate Identity
+scoreStep dt = stats . survived +~ Identity dt
 
--- put some upper limit on vel?
+
 playerAccel :: Float
 playerAccel = 8
 
@@ -177,13 +141,15 @@ getAccel (MotionControl u r d l) =
 
 
 userStep :: Float -> World -> World
-userStep dt w = beings . player . phys . vel %~ (Vec.+ playerAccel `mulSV` a) $ w
-    where a = getAccel (w ^. userIn . moving)
+userStep dt = execState $ do
+    a <- uses (userIn . moving) getAccel
+    beings . player . phys . vel %= (Vec.+ playerAccel `mulSV` a)
 
 
 -- do physics movement, ignoring gravity, collisions, or other sources of acceleration
 freeFallStep :: Float -> World -> World
 freeFallStep dt w@World {_beings = b} = w {_beings = fmap (freeFall dt) b}
+
 
 -- do physics collisions, ignoring death on contact and other effects
 collisionStep :: World -> World
@@ -194,19 +160,9 @@ collisionStep = beings %~ collisions
 testPlayer :: Being
 testPlayer = makeBeing (Player 0) v0 v0
 
---testAsteroid :: Being
---testAsteroid = makeBeing Asteroid (400 `mulSV` e1 Vec.+ 100 `mulSV` e2) v0
-
-{-
-testEnemy :: Being
-testEnemy = Being (Phys (100 * e2) v0 1 20) (Enemy 0)
-
-testBullet :: Being
-testBullet = Being (Phys (100 * (e1 + e2)) v0 1 10) Bullet
--}
 
 testWorld :: Frame -> IO World
 testWorld frame = do
     rng <- newStdGen
 
-    return $ World frame (Pointed testPlayer []) blankInput (Stats' 0.0) (SpawnData 0 (toRate 0.5) 0) rng []
+    return $ World frame (Pointed testPlayer []) blankInput undefined (SpawnData 0 (toRate 0.5) 0) rng Playing []

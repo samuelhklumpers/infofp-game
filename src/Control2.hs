@@ -27,7 +27,6 @@ handleInput e = execState $ do
             EventKey (MouseButton LeftButton) Down  _ mousepos -> firing .= Just mousepos
             EventKey (MouseButton LeftButton) Up    _ _        -> firing .= Nothing
             EventKey (Char c) _ _ _ -> case c of
-                'p' -> pausing %= (keyDown /=) -- xor hihi
                 'w' -> moving . motionU .= keyDown
                 'a' -> moving . motionL .= keyDown
                 's' -> moving . motionD .= keyDown
@@ -35,30 +34,14 @@ handleInput e = execState $ do
                 _   -> return ()
             _ -> return ()
 
-
-{-
-handleInput (EventKey (MouseButton LeftButton) _ _ mousepos) = shoot mousepos
-handleInput (EventKey (Char 'p') _ _ _) = pause
-handleInput (EventKey (Char 'f') _ _ _) = fire
-handleInput (EventKey (Char 'w') _ _ _) = controlU
-handleInput (EventKey (Char 'a') _ _ _) = controlL
-handleInput (EventKey (Char 's') _ _ _) = controlD
-handleInput (EventKey (Char 'd') _ _ _) = controlR
-handleInput _ = id
-
-pause :: World -> World
-pause = execState $ do paused %= not 
-
-controlPlayer :: Vector -> World -> World
-controlPlayer v = do beings.player.phys.vel %~ (Vec.+ v)
-
-controlU = controlPlayer (0,1)
-controlD = controlPlayer (0,-1)
-controlL = controlPlayer (-1,0)
-controlR = controlPlayer (1,0)
-
-shoot :: Vector -> World -> World
-shoot target  = execState $ do 
-	p <- use (beings.player)
-	spawnBeing (shootBullet p  target)
--}
+    case e of
+        EventKey (Char c) Down _ _ -> case c of
+            'q' -> gameState .= PlayerDied
+            'p' -> do
+                gs <- use gameState
+                case gs of
+                    Playing -> gameState .= Pausing
+                    Pausing -> gameState .= Playing
+                    _       -> return ()
+            _ -> return ()
+        _ -> return ()

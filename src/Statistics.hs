@@ -9,14 +9,9 @@ import Data.Functor.Identity
 import System.Directory
 import Control.Lens
 import GHC.Generics
-import qualified Data.ByteString.Lazy as LB
 
-import Enemies
-
---data Statistics = Statistics {survived :: Float} deriving Show
-
---emptyStats :: Statistics
---emptyStats = Statistics 0.0
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as BL
 
 
 jload :: FromJSON a => FilePath -> IO (Maybe a)
@@ -24,18 +19,21 @@ jload fp = do
     exists <- doesFileExist fp
 
     if exists then
-        decode <$> LB.readFile fp
+        decode . BL.fromStrict <$> BS.readFile fp
     else
         return Nothing
 
-    
+
 
 jdump :: ToJSON a => a -> FilePath -> IO ()
-jdump obj fp = LB.writeFile fp (encode obj)
+jdump obj fp = BL.writeFile fp (encode obj)
 
 
-newtype Stats' f = Stats' {_survived :: f Float} deriving Generic
+data Stats' f = Stats' {_survived :: f Float, _attempt :: f Int} deriving Generic
 makeLenses ''Stats'
+
+blankStats :: Stats' Identity
+blankStats = Stats' 0.0 0
 
 instance FromJSON (Stats' Maybe)
 instance ToJSON (Stats' Identity)
@@ -43,4 +41,6 @@ deriving instance Show (Stats' Identity)
 
 
 instance Default Stats' where
-    constrDef _ = Stats' 0.0
+    constrDef _ = blankStats
+
+type Stats = Stats' Identity
