@@ -16,11 +16,9 @@ import Control.Monad.State
 import Data.Map (empty, member)
 import System.Random
 import System.Random.Stateful
-import Data.Map (empty, member)
 
 
 import Being
-import Controls
 import Util
 import Statistics
 
@@ -28,14 +26,34 @@ type Frame = (Float, Float)
 data SpawnData = SpawnData {_timeSinceLast :: Float, _asteroidRate :: Float, _enemyRate :: Float} deriving Show
 makeLenses ''SpawnData
 
+data MotionControl = MotionControl {
+    _motionU :: Bool,
+    _motionR :: Bool,
+    _motionD :: Bool,
+    _motionL :: Bool
+}
+makeLenses ''MotionControl
+
+data UserInput = UserInput {
+    _pausing :: Bool,
+    _firing  :: Bool,
+    _moving  :: MotionControl
+}
+makeLenses ''UserInput
+
+blankMotion :: MotionControl
+blankMotion = MotionControl False False False False
+
+blankInput :: UserInput
+blankInput = UserInput False False blankMotion
+
 data World = World {
     _frame :: Frame,
     _beings :: Beings,
-    _keyMap :: KeyMap,
+    _userIn :: UserInput,
     _stats :: Stats' Identity,
     _spawns :: SpawnData,
     _randomizer :: StdGen,
-    _paused :: Bool,
     highscores :: [Stats' Identity]
 }
 makeLenses ''World

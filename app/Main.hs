@@ -50,7 +50,10 @@ screenTransform = translate (-fromIntegral w / 2) (-fromIntegral h / 2)
 
 
 stepHandle :: Float -> World -> IO World
-stepHandle dt w = do
+stepHandle dt w = return $ step dt w
+    
+    {-
+    do
     case M.lookup (SpecialKey KeyEsc) (w ^. keyMap) of
         Just Down -> do
             let score = w ^. stats
@@ -62,6 +65,7 @@ stepHandle dt w = do
             exitSuccess -- TODO enter highscore screen here
         _ -> do
             return $ step dt w
+    -}
 
 main :: IO ()
 main = do
