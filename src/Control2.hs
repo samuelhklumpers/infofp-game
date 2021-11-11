@@ -17,21 +17,22 @@ isDown (EventKey _ s _ _) = s == Down
 isDown _ = False
 
 handleInput :: Event -> World -> World
-handleInput e = execState $ zoom userIn $ do
+handleInput e = execState $ do
     w <- get
     let keyDown = isDown e
 
-    case e of
-        EventKey (MouseButton LeftButton) Down  _ mousepos -> firing .= Just (glospos2uspos w mousepos)
-        EventKey (MouseButton LeftButton) Up    _ _        -> firing .= Nothing
-        EventKey (Char c) _ _ _ -> case c of
-            'p' -> pausing %= (keyDown /=) -- xor hihi
-            'w' -> moving . motionU .= keyDown
-            'a' -> moving . motionL .= keyDown
-            's' -> moving . motionD .= keyDown
-            'd' -> moving . motionR .= keyDown
-            _   -> return ()
-        _ -> return ()
+    zoom userIn $ do
+        case e of
+            EventKey (MouseButton LeftButton) Down  _ mousepos -> firing .= Just (glospos2uspos w mousepos)
+            EventKey (MouseButton LeftButton) Up    _ _        -> firing .= Nothing
+            EventKey (Char c) _ _ _ -> case c of
+                'p' -> pausing %= (keyDown /=) -- xor hihi
+                'w' -> moving . motionU .= keyDown
+                'a' -> moving . motionL .= keyDown
+                's' -> moving . motionD .= keyDown
+                'd' -> moving . motionR .= keyDown
+                _   -> return ()
+            _ -> return ()
 
 
 {-
