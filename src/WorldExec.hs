@@ -24,6 +24,7 @@ import Control2
 import Shooting
 import Util
 import Statistics
+import Reaping
 import Drawing
 
 
@@ -96,24 +97,6 @@ spawnStep dt = execState $ do
             Just (x, y, vx, vy) -> spawnBeing (makeBeing Asteroid (x, y) (vx, vy))
             Nothing -> return ()
 
-
-isInBounds :: Frame -> Vector -> Bool
-isInBounds f v = let (x1, y1) = v in let (x2, y2) = f in
-    -x2 <= x1 && x1 <= x2 && -y2 <= y1 && y1 <= y2
-
-
--- mark everybody that gets hit, e.g. _player hit by bullet -> set damage, asteroid hit by bullet -> exploding, _player hit by asteroid -> death animation 
-damageStep :: World -> World
-damageStep = execState $ do
-    bs <- uses beings Being.toList
-    fr <- use frame
-
-    let bs' = filter (isInBounds fr . (^. phys . pos)) bs -- maybe prevent deleting the player
-    let bs'' = filter ((>0) . (^. health)) bs'
-
-    beings .= Being.fromList bs''
-
-
 physicsStep :: Float -> World -> World
 physicsStep dt =
     collisionStep .
@@ -165,4 +148,4 @@ testWorld :: Frame -> IO World
 testWorld frame = do
     rng <- newStdGen
 
-    return $ World frame (Pointed testPlayer []) blankInput undefined (SpawnData 0 (toRate 0.5) 0) rng Playing []
+    return $ World frame (Pointed testPlayer []) blankInput undefined (SpawnData 0 (toRate 0.5) 0) rng Playing [] []

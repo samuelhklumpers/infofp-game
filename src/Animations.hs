@@ -6,18 +6,24 @@ import Graphics.Gloss.Data.Picture
 import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
 
 
+data Animation = Implosion Color Vector Float 
+--An implosion is a circle for which the size decreases
 
-data Animation = Animation
+animationStep :: Float -> Animation -> Animation
+animationStep dt (Implosion c v r) = Implosion c v (r-dt)
 
-animationStep :: Animation -> Animation
-animationStep = undefined
+drawAnimation :: Animation -> Picture
+drawAnimation (Implosion c v r) = color c $ (uncurry translate) v $ circleSolid r
 
+drawTimedAnimation ::TimedAnimation -> Picture
+drawTimedAnimation = drawAnimation.fst
 
-type TimedAnimation = (Animation, Int)
-type Animations = [TimedAnimation]
+type TimedAnimation = (Animation, Float)
+type TimedAnimations = [TimedAnimation]
 
-clean :: Animations -> Animations 
-clean = undefined -- filter (\x -> snd.x >0)
+cleanAnimations :: TimedAnimations -> TimedAnimations 
+cleanAnimations  = filter (\x -> (snd x) > 0)
 
-animate :: Animations -> Animations
-animate as = [(animationStep x, t-1)| (x,t)<- as]
+animationsStep :: Float -> TimedAnimations -> TimedAnimations
+animationsStep dt as = cleanAnimations [(animationStep dt a, t-dt )| (a,t)<- as]
+
