@@ -64,17 +64,32 @@ step dt = execState $ do
     p <- use (userIn . pausing)
 
     unless p $ do
-        modify $ fireStep dt
+        modify $ fireStep 
         modify damageStep
         modify $ physicsStep dt
         modify $ userStep dt
         modify $ scoreStep dt
         modify $ spawnStep dt
 
+fireStep :: World -> World
+fireStep = execState $ do 
+			f <- use $ userIn.firing
+			p <- use $ beings.player
+            case f of 
+              NoShots     -> return ()
+              Shot target -> case (shootBullet p target) of 
+			                     Nothing     -> return ()
+							     Just bullet ->  spawnBeing (bullet) 
+
+{-
+
 fireTimeout :: Float
 fireTimeout = 0.3
 
+
 fireStep :: Float -> World -> World
+
+
 fireStep dt = execState $ do
     r <- use $ beings . player . race
 
@@ -93,7 +108,7 @@ fireStep dt = execState $ do
             else
                 beings . player . race .= Player t'
         _ -> return ()
-
+-}
 
 uniformF :: Float -> Float -> State StdGen Float
 uniformF l h = state $ uniformR (l, h)
