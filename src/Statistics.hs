@@ -40,7 +40,8 @@ instance ToJSON (Stats' Identity)
 
 instance Show (Stats' Identity) where
     show s = "Attempt: "    ++ show (runIdentity $ _attempt s) ++
-             ", survived: " ++ show (runIdentity $ _survived s)
+             ", survived: " ++ takeWhile (/= '.') (show (runIdentity $ _survived s)) ++ " seconds" ++
+			 ", score : "   ++ show (_score s) ++ "points"
 
 
 instance Default Stats' where

@@ -10,6 +10,7 @@ import Graphics.Gloss.Data.Color (greyN)
 import Animations
 import Control.Monad.State
 import Control.Lens
+import Statistics
 
 
 writeScreen :: String -> Picture -- some random numbers, gloss isn't too transparent on this stuff
@@ -24,8 +25,9 @@ writeAndShift str old = Pictures [writeScreen str, translate 0 (-40) old]
 draw :: World -> Picture
 draw w = Pictures $ flip execState [] $ do
         let b = Being.toList $ _beings w
+        let drawScore = scale 0.12 0.12 $ translate (-3000) (-3000) $ Color white $ Text $ show $w ^. stats
 
-        put $ map drawBeing b  ++ map drawTimedAnimation (_timedAnimations w)
+        put $ map drawBeing b  ++ map drawTimedAnimation (_timedAnimations w) ++ [drawScore]
 
         case w ^. gameState of
             Pausing ->    modify (writeScreen "Paused":)
