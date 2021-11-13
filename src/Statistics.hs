@@ -43,11 +43,10 @@ instance Show (Stats' Identity) where
              ", survived: " ++ takeWhile (/= '.') (show (runIdentity $ _survived s)) ++ " seconds" ++
 			 ", score : "   ++ show (_score s) ++ "points"
 
-instance Eq (Stats' Identity) where
-    x == y = x ^. survived == y ^. survived
+deriving instance Eq (Stats' Identity)
 
 instance Ord (Stats' Identity) where
-    x < y = x ^. survived < y ^. survived
+    x < y = x ^. score < y ^. score
     x <= y = x == y || x < y
 
 

@@ -10,6 +10,7 @@ import Graphics.Gloss.Interface.Pure.Game
 import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
 import Control.Lens
 import Control.Monad.State
+import Data.Maybe
 
 
 isDown :: Event -> Bool
@@ -17,9 +18,11 @@ isDown (EventKey _ s _ _) = s == Down
 isDown _ = False
 
 handleInput :: Event -> World -> World
-handleInput e = execState $ do
+handleInput e w = fromMaybe w $ flip execStateT w $ do
     w <- get
     let keyDown = isDown e
+
+    when (w ^. gameState == GameOver) (lift Nothing)
 
     zoom userIn $ do
         case e of

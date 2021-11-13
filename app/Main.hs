@@ -10,7 +10,7 @@ import Control.Lens
 import Data.Bifunctor
 import Data.Maybe ( fromMaybe )
 import Data.IORef
-import Data.Map as M
+import qualified Data.Map as M
 import qualified Data.Vector.Unboxed.Sized as VS
 import Control.Exception
 import System.Exit
@@ -42,15 +42,15 @@ fps :: Int
 fps = 30
 
 makeStats :: [Stats] -> Stats
-makeStats xs = blankStats & attempt .~ Identity (length xs)
+makeStats xs = blankStats & attempt .~ maximum (map _attempt xs) + 1
 
 main :: IO ()
 main = do
     scores <- fromMaybe [] <$> (jload "scores.json" :: IO (Maybe [Stats]))
 
     let stats' = makeStats scores
-    world <- testWorld windowFrame stats' scores 
-    
+    world <- testWorld windowFrame stats' scores
+
     playIO window background fps world (return . draw) ((return .) . handler) step
 
 

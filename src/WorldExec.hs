@@ -27,7 +27,7 @@ import Statistics
 import Reaping
 import Spawning
 import Drawing
-import Reaping 
+import Reaping
 import Animations
 import Spawning
 
@@ -63,19 +63,27 @@ step dt = execStateT $ do
     case gs of
         Playing -> do
             modify $ spawnStep dt
+            reloadStep dt
             modify $ fireStep dt
             modify $ userStep dt
+            modify $ aiStep dt
             modify $ physicsStep dt
             modify damageStep
             modify $ scoreStep dt
-            modify $ anistep dt 
+            modify $ anistep dt
         PlayerDied -> gameEndStep
         _ -> return ()
 
-anistep :: Float -> World -> World  
-anistep dt = execState $ do timedAnimations %= (animationsStep dt)
+reloadStep :: Float -> StateT World IO ()
+reloadStep dt = do
+    beings %= fmap (reloadBeing dt)
 
-            
+reloadBeing :: Float -> Being -> Being
+reloadBeing dt b = b & timeSinceLastShot +~ dt
+
+anistep :: Float -> World -> World
+anistep dt = execState $ do timedAnimations %= animationsStep dt
+
 highscoreSize :: Int
 highscoreSize = 8
 
@@ -83,7 +91,7 @@ gameEndStep :: StateT World IO ()
 gameEndStep = do
     w <- get
 
-    let newScores = take highscoreSize $ sort $ _stats w:w ^. highscores
+    let newScores = take highscoreSize $ reverse $ sort $ _stats w:w ^. highscores
     lift $ jdump newScores "scores.json"
 
     highscores .= newScores

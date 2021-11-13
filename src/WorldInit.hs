@@ -45,7 +45,7 @@ data UserInput = UserInput {
 }
 makeLenses ''UserInput
 
-data GameState = Playing | Pausing | PlayerDied | GameOver | Exiting
+data GameState = Playing | Pausing | PlayerDied | GameOver | Exiting deriving Eq
 
 
 blankMotion :: MotionControl

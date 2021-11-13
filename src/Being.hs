@@ -10,7 +10,7 @@ module Being where
 --import qualified Data.Vector.Unboxed.Sized as VS
 import Graphics.Gloss.Data.Vector
 import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
-import Graphics.Gloss.Data.Color 
+import Graphics.Gloss.Data.Color
 import Graphics.Gloss.Data.Picture
 
 
@@ -33,50 +33,6 @@ type TimeSinceLastShot = Float
 
 data Phys = Phys {_pos :: Vector, _vel :: Vector, _mass :: Mass, _radius :: Radius} deriving (Eq, Show)
 makeLenses ''Phys
-
-
-data Race = Player Timeout | Asteroid | Bullet | Enemy Timeout deriving (Eq, Show)
-
-
-colorBeing :: Race -> Color
-colorBeing (Player _ ) = blue 
-colorBeing (Enemy _ ) = red
-colorBeing (Asteroid ) = greyN 0.5
-colorBeing Bullet = yellow
-{-
-colorBeing race = case race of
-    Player _    -> blue
-    Enemy _     -> red
-    Asteroid    -> greyN 0.5
-    Bullet      -> yellow
--}
-scoreBeing :: Race -> Int
-scoreBeing (Player _ ) = 0
-scoreBeing (Enemy _  ) = 10 
-scoreBeing Asteroid    = 10
-scoreBeing Bullet      = 0 
-
-
--- undo Race, make GADT? --> type guarantee we don't treat a player as an asteroid
-data Being = Being {_phys :: Phys, _race :: Race, _health :: Health, _timeSinceLastShot :: TimeSinceLastShot} deriving (Eq, Show)
-makeLenses ''Being
-
-
-
-makeBeing :: Race -> Vector -> Vector -> Being
-makeBeing r x v = case r of
-    Player t    -> Being (Phys x v baseMass 16) r baseHp lastFire
-    Enemy t     -> Being (Phys x v baseMass 16) r baseHp lastFire
-    Asteroid    -> Being (Phys x v baseMass 24) r baseHp lastFire
-    Bullet      -> Being (Phys x v baseMass 8)  r baseHp lastFire
-    where
-        baseHp = 1
-        lastFire = 0
-        baseMass = 1.0
-
-
-
-
 
 
 data Pointed a = Pointed {_player :: a, _npo :: [a]}
@@ -104,6 +60,56 @@ terminal x = Pointed x []
 --data Beings = Beings {_player :: Being, _asteroids :: [Being], _enemies :: [Being], _bullets :: [Being]} deriving Show
 --makeLenses ''Beings
 type Beings = Pointed Being
+
+
+type AimAI = Being -> Beings -> Maybe Vector
+type MoveAI = Being -> Beings -> Vector
+data Race = Player Timeout | Asteroid | Bullet | Enemy Timeout AimAI MoveAI
+
+instance Eq Race where
+    Player {} == Player {} = True
+    Asteroid {} == Asteroid {} = True
+    Enemy {} == Enemy {} = True
+    Bullet {} == Bullet {} = True
+    _ == _ = False
+
+-- undo Race, make GADT? --> type guarantee we don't treat a player as an asteroid
+data Being = Being {_phys :: Phys, _race :: Race, _health :: Health, _timeSinceLastShot :: TimeSinceLastShot} deriving Eq
+makeLenses ''Being
+
+
+
+makeBeing :: Race -> Vector -> Vector -> Being
+makeBeing r x v = case r of
+    Player {}    -> Being (Phys x v baseMass 16) r baseHp lastFire
+    Enemy {}     -> Being (Phys x v baseMass 16) r baseHp lastFire
+    Asteroid    -> Being (Phys x v baseMass 24) r baseHp lastFire
+    Bullet      -> Being (Phys x v baseMass 8)  r baseHp lastFire
+    where
+        baseHp = 1
+        lastFire = 0
+        baseMass = 1.0
+
+colorBeing :: Race -> Color
+colorBeing Player {} = blue
+colorBeing Enemy {} = red
+colorBeing Asteroid {} = greyN 0.5
+colorBeing Bullet {} = yellow
+
+{- this saves 40 characters though :(
+colorBeing race = case race of
+    Player _    -> blue
+    Enemy _     -> red
+    Asteroid    -> greyN 0.5
+    Bullet      -> yellow
+-}
+
+scoreBeing :: Race -> Int
+scoreBeing Player {} = 0
+scoreBeing Enemy {} = 10
+scoreBeing Asteroid    = 10
+scoreBeing Bullet      = 0
+
 
 -- at this point, I already had found out that making Beings anything other than type Beings = [Being] or Set Being was a mistake
 --toListB :: Beings -> [Being]
@@ -203,3 +209,21 @@ doCollisions bs = runST $ do
                 _       -> return ()
 
     getElems arr
+
+
+homeAtAI :: MoveAI
+homeAtAI self others = others ^. player . phys . pos Vec.- self ^. phys . pos
+
+floatAI :: MoveAI
+floatAI self others = v0
+
+aimAtAI :: AimAI
+aimAtAI _ others = Just $ others ^. player . phys . pos
+
+{-
+homeLeadAI :: AI
+homeLeadAI = undefined -- move at, take into account player velocity
+
+aimLeadAI :: AI
+aimLeadAI = undefined -- same, but for shooting
+-}
