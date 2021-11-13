@@ -141,7 +141,7 @@ collisionStep = beings %~ collisions
 
 -- tests
 testPlayer :: Being
-testPlayer = makeBeing (Player 0) v0 v0
+testPlayer = makeBeing Player v0 v0
 
 
 testWorld :: Frame -> Stats -> [Stats] -> IO World

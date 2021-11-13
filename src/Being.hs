@@ -64,7 +64,7 @@ type Beings = Pointed Being
 
 type AimAI = Being -> Beings -> Maybe Vector
 type MoveAI = Being -> Beings -> Vector
-data Race = Player Timeout | Asteroid | Bullet | Enemy Timeout AimAI MoveAI
+data Race = Player | Asteroid | Bullet | Enemy AimAI MoveAI
 
 instance Eq Race where
     Player {} == Player {} = True
@@ -73,15 +73,50 @@ instance Eq Race where
     Bullet {} == Bullet {} = True
     _ == _ = False
 
+data Turreted = Turret Timeout | NoTurret deriving (Eq, Show)
+
+
 -- undo Race, make GADT? --> type guarantee we don't treat a player as an asteroid
-data Being = Being {_phys :: Phys, _race :: Race, _health :: Health, _timeSinceLastShot :: TimeSinceLastShot} deriving Eq
+data Being = Being {_phys :: Phys, _race :: Race, _health :: Health, _timeSinceLastShot :: TimeSinceLastShot, _turreted :: Turreted} deriving Eq
 makeLenses ''Being
 
+-- Below all the starting conditions a Race should have 
+-- note these are in principle not fixed troughout the game
+-- meaning Turrets can be placed on all beings 
 
+radiusBeing :: Race -> Radius
+radiusBeing Player   {} = 16
+radiusBeing Enemy    {} = 16
+radiusBeing Asteroid {} = 24
+radiusBeing Bullet   {} = 8
+
+turretBeing :: Race -> Turreted
+turretBeing Player   = Turret 0.3
+turretBeing Enemy {} = Turret 1.0
+turretBeing Asteroid = NoTurret
+turretBeing Bullet   = NoTurret
+
+colorBeing :: Race -> Color
+colorBeing Player {} = blue
+colorBeing Enemy {} = red
+colorBeing Asteroid {} = greyN 0.5
+colorBeing Bullet {} = yellow
+-- End of Race starting conditions
+
+canShoot :: Being -> Bool 
+canShoot b = case (b^.turreted) of 
+                NoTurret -> False 
+                Turret timeout -> timeout < (b^.timeSinceLastShot)
 
 makeBeing :: Race -> Vector -> Vector -> Being
+makeBeing r x v = Being (Phys x v baseMass (radiusBeing r) ) r baseHP lastFire (turretBeing r) where
+                        baseHP = 1
+                        lastFire = 0
+                        baseMass = 1.0
+{-
+makeBeing :: Race -> Vector -> Vector -> Being
 makeBeing r x v = case r of
-    Player {}    -> Being (Phys x v baseMass 16) r baseHp lastFire
+    Player {}    -> Being (Phys x v baseMass 16) r baseHp lastFire (Turreted 3.0)
     Enemy {}     -> Being (Phys x v baseMass 16) r baseHp lastFire
     Asteroid    -> Being (Phys x v baseMass 24) r baseHp lastFire
     Bullet      -> Being (Phys x v baseMass 8)  r baseHp lastFire
@@ -89,14 +124,13 @@ makeBeing r x v = case r of
         baseHp = 1
         lastFire = 0
         baseMass = 1.0
+-}
 
-colorBeing :: Race -> Color
-colorBeing Player {} = blue
-colorBeing Enemy {} = red
-colorBeing Asteroid {} = greyN 0.5
-colorBeing Bullet {} = yellow
 
-{- this saves 40 characters though :(
+
+
+
+{- this saves 40 characters though :( Yes but pattern matching 
 colorBeing race = case race of
     Player _    -> blue
     Enemy _     -> red

@@ -36,7 +36,7 @@ spawnStep dt = execState $ do
         aRate <- use (spawns . asteroidRate)
         spawnRoll w aRate Asteroid 
         eRate <- use (spawns . enemyRate)
-        spawnRoll w eRate (Enemy 0 aimAtAI floatAI)
+        spawnRoll w eRate (Enemy  aimAtAI floatAI)
 
 spawnRoll :: Float -> Float -> Race -> StateT World Identity ()
 spawnRoll w rate what = do

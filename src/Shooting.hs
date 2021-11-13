@@ -18,23 +18,23 @@ bulletspeed :: Float
 bulletspeed  = 300
 
 startPosMult :: Float
-startPosMult = 1.5
+startPosMult = 1.0
 
 
-shootBullet :: Being -> Vector -> Maybe Being
+shootBullet :: Being -> Race -> Vector -> Maybe Being
 --In principe kan alles schieten, leuk als je enemies maakt die turrets kunnen plaatsen op asteroids zodat asteroids op de player schieten. 
-shootBullet shooter targetpos  | time < shoottimeout = Nothing
-                               | otherwise    = Just (makeBeing Bullet startpos velocity) where
-                                   time       = shooter ^. timeSinceLastShot
-                                   shooterpos = shooter ^. phys. pos
-                                   direction  = normalizeV (targetpos Vec.- shooterpos)
-                                   velocity   = bulletspeed `mulSV` direction Vec.+ shooter ^. phys . vel
-                                   startpos   = shooterpos  Vec.+ ((startPosMult * (shooter ^. phys.radius)) `mulSV` direction)
+shootBullet shooter ammo targetpos  | canShoot shooter = Just (makeBeing ammo startpos velocity) 
+                             	    | otherwise    = Nothing where 
+                             	        time       = shooter ^. timeSinceLastShot
+                             	        shooterpos = shooter ^. phys. pos
+                             	        direction  = normalizeV (targetpos Vec.- shooterpos)
+                             	        velocity   = bulletspeed `mulSV` direction Vec.+ shooter ^. phys . vel
+                             	        startpos   = shooterpos  Vec.+ ((startPosMult * (shooter ^. phys.radius + radiusBeing ammo)) `mulSV` direction)
 
 playerShot :: World -> Maybe Being
 playerShot w = do
     target <- w ^. userIn . firing
-    shootBullet (w ^. beings . player) target
+    shootBullet (w ^. beings . player) Bullet target
 
 fireStep :: Float -> World -> World
 fireStep dt = execState $ do
@@ -47,7 +47,7 @@ fireStep dt = execState $ do
 
 
 unpackAI :: Being -> Maybe (Being, Race, AimAI, MoveAI)
-unpackAI b@Being {_race = e@(Enemy _ shootingAI movingAI)} = Just (b, e, shootingAI, movingAI)
+unpackAI b@Being {_race = e@(Enemy shootingAI movingAI)} = Just (b, e, shootingAI, movingAI)
 unpackAI _ = Nothing
 
 shootIfAiAlgebra :: Beings -> Being -> ([Being], State World ()) -> ([Being], State World ())
@@ -57,7 +57,7 @@ shootIfAi :: Beings -> Being -> (Being, State World ())
 shootIfAi others self = fromMaybe (self, return ()) $ do
     (b, r, aimAI, _) <- unpackAI self
     target <- aimAI self others
-    bullet <- shootBullet self target
+    bullet <- shootBullet self Bullet target
 
     return (
         self & timeSinceLastShot .~ 0,
