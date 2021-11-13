@@ -10,6 +10,9 @@ module Being where
 --import qualified Data.Vector.Unboxed.Sized as VS
 import Graphics.Gloss.Data.Vector
 import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
+import Graphics.Gloss.Data.Color 
+import Graphics.Gloss.Data.Picture
+
 
 import Control.Lens
 import GHC.TypeNats (KnownNat)
@@ -34,9 +37,35 @@ makeLenses ''Phys
 
 data Race = Player Timeout | Asteroid | Bullet | Enemy Timeout deriving (Eq, Show)
 
+
+colorBeing :: Race -> Color
+colorBeing race = case race of
+    Player _    -> blue
+    Enemy _     -> red
+    Asteroid    -> greyN 0.5
+    Bullet      -> yellow
+
+
 -- undo Race, make GADT? --> type guarantee we don't treat a player as an asteroid
 data Being = Being {_phys :: Phys, _race :: Race, _health :: Health, _timeSinceLastShot :: TimeSinceLastShot} deriving (Eq, Show)
 makeLenses ''Being
+
+
+
+makeBeing :: Race -> Vector -> Vector -> Being
+makeBeing r x v = case r of
+    Player t    -> Being (Phys x v baseMass 16) r baseHp lastFire
+    Enemy t     -> Being (Phys x v baseMass 16) r baseHp lastFire
+    Asteroid    -> Being (Phys x v baseMass 24) r baseHp lastFire
+    Bullet      -> Being (Phys x v baseMass 8)  r baseHp lastFire
+    where
+        baseHp = 1
+        lastFire = 0
+        baseMass = 1.0
+
+
+
+
 
 
 data Pointed a = Pointed {_player :: a, _npo :: [a]}
@@ -162,16 +191,3 @@ doCollisions bs = runST $ do
                 _       -> return ()
 
     getElems arr
-
-
-makeBeing :: Race -> Vector -> Vector -> Being
-makeBeing r x v = case r of
-    Player t    -> Being (Phys x v baseMass 16) r baseHp lastFire
-    Enemy t     -> Being (Phys x v baseMass 16) r baseHp lastFire
-    Asteroid    -> Being (Phys x v baseMass 24) r baseHp lastFire
-    Bullet      -> Being (Phys x v baseMass 8)  r baseHp lastFire
-    where
-        baseHp = 1
-        lastFire = 0
-        baseMass = 1.0
-

@@ -41,12 +41,12 @@ drawBeing Being {_phys = phys, _race = race}
         Phys {_pos = p, _radius = r} = phys
         (x, y) = p
         c = colorBeing race
-
+{-
 colorBeing :: Race -> Color
 colorBeing race = case race of
     Player _    -> blue
     Enemy _     -> red
     Asteroid    -> greyN 0.5
     Bullet      -> yellow
-
+-}
 
