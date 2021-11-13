@@ -13,7 +13,8 @@ import Control.Monad.State
 import Data.Map (empty, member, Map)
 import System.Random
 import System.Random.Stateful
-
+import Data.List
+import Statistics
 import Being
 import Animations
 import WorldInit
@@ -26,23 +27,34 @@ isInBounds (x2,y2) (x1,y1) = -- = let (x1, y1) = v in let (x2, y2) = f in
 
 
 -- mark everybody that gets hit, e.g. _player hit by bullet -> set damage, asteroid hit by bullet -> exploding, _player hit by asteroid -> death animation 
+--
+
 damageStep :: World -> World
 damageStep = execState $ do
     player <- use (beings . player)
     bs <- uses beings Being.toList
     fr <- use frame
+    --score <- use (stats.score)
 
-    let bs'        = filter (isInBounds fr . (^. phys . pos)) bs -- maybe prevent deleting the player
-    let bs''       = filter ((>0) . (^. health)) bs'
-    let deathlist  = filter ((<=0).(^.health)) bs'
-    let corpselist = map death_to_animation deathlist
+    let (visible, gone) = partition (isInBounds fr . (^. phys . pos)) bs 
+    let (survivors,dead) = partition ( (>0) . (^. health)) visible
+    let corpselist       = map death_to_animation dead
+
+--    let bs'        = filter (isInBounds fr . (^. phys . pos)) bs -- maybe prevent deleting the player
+--    let bs''       = filter ((>0) . (^. health)) bs'
+--    let deathlist  = filter ((<=0).(^.health)) bs'
+    let corpselist = map death_to_animation dead
 
     timedAnimations <>= corpselist
+    
+    let f x v = v + scoreBeing (x^.race)
+    stats.score += (foldr f 0 dead)
+    
 
-    when (player `elem` deathlist) $ do
+    when (player `elem` (dead++gone)) $ do
         gameState .= PlayerDied
 
-    beings .= Being.fromList bs''
+    beings .= Being.fromList survivors
 
 implosioncolor = red
 death_to_animation :: Being -> TimedAnimation

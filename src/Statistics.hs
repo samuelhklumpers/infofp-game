@@ -29,11 +29,11 @@ jdump :: ToJSON a => a -> FilePath -> IO ()
 jdump obj fp = BL.writeFile fp (encode obj)
 
 
-data Stats' f = Stats' {_survived :: f Float, _attempt :: f Int} deriving Generic
+data Stats' f = Stats' {_survived :: f Float, _attempt :: f Int, _score:: Int} deriving Generic
 makeLenses ''Stats'
 
 blankStats :: Stats' Identity
-blankStats = Stats' 0.0 0
+blankStats = Stats' 0.0 0 0
 
 instance FromJSON (Stats' Maybe)
 instance ToJSON (Stats' Identity)

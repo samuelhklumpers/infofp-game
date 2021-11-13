@@ -50,7 +50,7 @@ colorBeing race = case race of
     Asteroid    -> greyN 0.5
     Bullet      -> yellow
 -}
-scoreBeing :: Race -> Color
+scoreBeing :: Race -> Int
 scoreBeing (Player _ ) = 0
 scoreBeing (Enemy _  ) = 10 
 scoreBeing Asteroid    = 10
