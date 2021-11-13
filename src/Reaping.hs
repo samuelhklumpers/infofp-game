@@ -56,6 +56,7 @@ damageStep = execState $ do
 
     beings .= Being.fromList survivors
 
-implosioncolor = red
-death_to_animation :: Being -> TimedAnimation
-death_to_animation b = (Implosion implosioncolor (b^.phys.pos), r) where r = b^.phys.radius
+--implosioncolor = red
+--death_to_animation :: Being -> TimedAnimation
+--death_to_animation b = (Implosion implosioncolor (b^.phys.pos)  , r) where r = b^.phys.radius
+--death_to_animation b = (Explosion implosioncolor (b^.phys.pos) (2*r), r) where r = b^.phys.radius
