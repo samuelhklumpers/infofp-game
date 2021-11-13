@@ -11,6 +11,7 @@ import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
 import Graphics.Gloss.Data.Color (greyN)
 import GHC.TypeNats (KnownNat)
 import Data.Functor.Identity
+import Data.List
 import Control.Lens
 import Control.Monad.State
 import Control.Monad
@@ -75,13 +76,14 @@ anistep :: Float -> World -> World
 anistep dt = execState $ do timedAnimations %= (animationsStep dt)
 
             
-
+highscoreSize :: Int
+highscoreSize = 8
 
 gameEndStep :: StateT World IO ()
 gameEndStep = do
     w <- get
 
-    let newScores = _stats w:w ^. highscores
+    let newScores = take highscoreSize $ sort $ _stats w:w ^. highscores
     lift $ jdump newScores "scores.json"
 
     highscores .= newScores

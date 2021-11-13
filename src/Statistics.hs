@@ -43,6 +43,13 @@ instance Show (Stats' Identity) where
              ", survived: " ++ takeWhile (/= '.') (show (runIdentity $ _survived s)) ++ " seconds" ++
 			 ", score : "   ++ show (_score s) ++ "points"
 
+instance Eq (Stats' Identity) where
+    x == y = x ^. survived == y ^. survived
+
+instance Ord (Stats' Identity) where
+    x < y = x ^. survived < y ^. survived
+    x <= y = x == y || x < y
+
 
 instance Default Stats' where
     constrDef _ = blankStats
