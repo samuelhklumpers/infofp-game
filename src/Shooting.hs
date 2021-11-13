@@ -13,7 +13,7 @@ shoottimeout :: TimeSinceLastShot
 shoottimeout = 0.3
 
 bulletspeed :: Float
-bulletspeed  = 200
+bulletspeed  = 300
 
 startPosMult :: Float
 startPosMult = 1.5

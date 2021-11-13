@@ -39,11 +39,22 @@ data Race = Player Timeout | Asteroid | Bullet | Enemy Timeout deriving (Eq, Sho
 
 
 colorBeing :: Race -> Color
+colorBeing (Player _ ) = blue 
+colorBeing (Enemy _ ) = red
+colorBeing (Asteroid ) = greyN 0.5
+colorBeing Bullet = yellow
+{-
 colorBeing race = case race of
     Player _    -> blue
     Enemy _     -> red
     Asteroid    -> greyN 0.5
     Bullet      -> yellow
+-}
+scoreBeing :: Race -> Color
+scoreBeing (Player _ ) = 0
+scoreBeing (Enemy _  ) = 10 
+scoreBeing Asteroid    = 10
+scoreBeing Bullet      = 0 
 
 
 -- undo Race, make GADT? --> type guarantee we don't treat a player as an asteroid
@@ -120,6 +131,7 @@ freeFall' dt p = pos %~ (Vec.+ mulSV dt (p ^.vel)) $ p
 -- Just (collision vector) when colliding, otherwise None
 -- TODO need posteriori collision detection to prevent _bullets teleporting through thin surfaces
 collide :: Being -> Being -> Maybe Vector
+--Inputs 2 beings, outputs the position of their collision if there's a collision, nothing if there's no collission. 
 collide a b
     | d1 <= d2  = Just v
     | otherwise = Nothing where

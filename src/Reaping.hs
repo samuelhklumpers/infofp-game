@@ -20,7 +20,8 @@ import WorldInit
 
 -- replace with actual screen bounds if necessary
 isInBounds :: Frame -> Vector -> Bool
-isInBounds f v = let (x1, y1) = v in let (x2, y2) = f in
+--isInBounds f v = let (x1, y1) = v in let (x2, y2) = f in
+isInBounds (x2,y2) (x1,y1) = -- = let (x1, y1) = v in let (x2, y2) = f in
     -x2 <= x1 && x1 <= x2 && -y2 <= y1 && y1 <= y2
 
 

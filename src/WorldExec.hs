@@ -36,18 +36,6 @@ handler :: Event -> World -> World
 handler = Control2.handleInput
 
 {-
-handleInput :: Event -> World -> World
-handleInput e = execState $ do
-    case e of
-        e'@(EventKey key s _ _)   -> do
-            if member key dirMap then
-                keyMap %= flip handleKeyState e'
-            else
-                when (key == Char 'p' && s == Down) $ paused %= not
-        _                       -> return ()
--}
-
-{-
 -- step
 step :: Float -> World -> World
 step dt = execState $ do
@@ -67,33 +55,6 @@ anistep dt = execState $ do timedAnimations %= (animationsStep dt)
 
 -}
 
-{-
-
-fireTimeout :: Float
-fireTimeout = 0.3
-
-
-fireStep :: Float -> World -> World
-
-
-fireStep dt = execState $ do
-    r <- use $ beings . player . race
-
-    case r of
-        Player t -> do
-            let t' = min (t + dt) fireTimeout
-
-            fire <- use (userIn . firing)
-            if fire && t' >= fireTimeout then do
-                beings . player . race .= Player 0
-                ph <- use $ beings . player . phys
-                let x = ph ^. pos
-                let v = ph ^. vel
-                let rad = ph ^. radius
-                spawnBeing (makeBeing Bullet (x Vec.+ (2 * rad) `mulSV` e2) (v Vec.+ 200 `mulSV` e2))
-            else
-                beings . player . race .= Player t'
--}
 step :: Float -> World -> IO World
 step dt = execStateT $ do
     gs <- use gameState
