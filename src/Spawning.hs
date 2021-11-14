@@ -8,12 +8,18 @@ import Util
 import Being
 import EnemyAI
 
+{- 
+ - This module handles the spawning of new enemies
+ - We use randomness for the location
+ - Also there are some number to make the spawn location nice
+ -}
+
 
 spawnTick :: Float
 spawnTick = 0.1 -- seconds
 
 -- rates as in T ~ Exp(1/t), t in spawnTicks
-toRate :: Float -> Float -- TODO I think this doesn't mean what I think it does
+toRate :: Float -> Float 
 toRate interval = perTick where
     perSecond = 1 / interval
     perTick = perSecond * spawnTick
@@ -28,7 +34,6 @@ spawnStep dt = execState $ do
     spawns . timeSinceLast += dt
     t <- use (spawns . timeSinceLast)
     (w, h) <- use frame
-    -- put enemy here too
 
     let n = round (t / spawnTick)
     spawns . timeSinceLast -= fromIntegral n * spawnTick
@@ -45,11 +50,13 @@ spawnRoll w rate what = do
             roll <- uniformF 0.0 1.0
 
             if roll < rate then do
-                x <- uniformF (-w) w
+                x  <- uniformF (-w) w
                 vx <- uniformF (-20) 20
                 vy <- uniformF (-40) (-200)
-                let y = 300.0
-                return $ Just (x, y, vx, vy)
+                let y  =  300.0
+                spawnfromabove <- uniformbool
+                if spawnfromabove then return $ Just (x, y, vx, vy)
+                else return $ Just (x, -y, vx, -vy)
             else return Nothing
 
         case ret of
