@@ -21,6 +21,17 @@ import Being
 import Control.Lens
 
 
+data Animation = Implosion Color Vector | Explosion Color Vector Float
+--An implosion is a circle for which the size decreases
+--An explosion has increased size 
+
+type TimedAnimation = (Animation, Float)
+type TimedAnimations = [TimedAnimation]
+
+
+animationspeed = 100
+
+
 explode :: Being -> TimedAnimation
 explode b =  ((Explosion c p (endR)), (beginR)) where 
                           c = orange -- it turns out this looks cooler
@@ -39,19 +50,10 @@ death_to_animation b = case (b^.race) of
                          Bullet -> explode b 
                          _      -> implode b
 
-
-data Animation = Implosion Color Vector | Explosion Color Vector Float
---An implosion is a circle for which the size decreases
---An explosion has increased size 
-
-type TimedAnimation = (Animation, Float)
-type TimedAnimations = [TimedAnimation]
-
 drawTimedAnimation :: TimedAnimation -> Picture
 drawTimedAnimation ((Implosion c v), r)    = color c $ (uncurry translate) v $ circleSolid r
 drawTimedAnimation ((Explosion c v r ), t) = color c $ (uncurry translate) v $ circleSolid (r-t)
 
-animationspeed = 100
 
 animationStep :: Float -> TimedAnimation -> TimedAnimation
 animationStep dt (ani ,t) = (ani , t - animationspeed * dt)

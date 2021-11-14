@@ -22,6 +22,7 @@ import World
 import Being
 import Controls
 import Shooting
+import Config
 import Util
 import Statistics
 import Reaping
@@ -33,9 +34,6 @@ import Animations
  - also the initial value of the world is loaded here
  -}
 
-
-handler :: Event -> World -> World
-handler = Control.handleInput
 
 step :: Float -> World -> IO World
 step dt = execStateT $ do
@@ -65,9 +63,6 @@ reloadBeing dt b = b & timeSinceLastShot +~ dt
 anistep :: Float -> World -> World
 anistep dt = execState $ do timedAnimations %= animationsStep dt
 
-highscoreSize :: Int
-highscoreSize = 8
-
 gameEndStep :: StateT World IO ()
 gameEndStep = do
     w <- get
@@ -86,10 +81,6 @@ physicsStep dt =
 
 scoreStep :: Float -> World -> World
 scoreStep dt = stats . survived +~ Identity dt
-
-
-playerAccel :: Float
-playerAccel = 8
 
 toggleAccel :: Vector -> Bool -> Vector -> Vector
 toggleAccel v b w
@@ -119,22 +110,3 @@ freeFallStep dt w@World {_beings = b} = w {_beings = fmap (freeFall dt) b}
 collisionStep :: World -> World
 collisionStep = beings %~ collisions
 
-
--- tests/initialization
-testPlayer :: Being
-testPlayer = makeBeing Player v0 v0
-
-
-testWorld :: Frame -> Stats -> [Stats] -> IO World
-testWorld frame stats' scores = do
-    rng <- newStdGen
-
-    return $ World
-        frame
-        (Pointed testPlayer [])
-        blankInput
-        stats'
-        baseSpawnRates
-        rng Playing
-        scores
-        []

@@ -28,8 +28,11 @@ library
   exposed-modules:
       Animations
       Being
+      Config
       Controls
       Drawing
+      EnemyAI
+      Pointed
       Reaping
       Rules
       Shooting
@@ -60,6 +63,7 @@ library
 executable Asteroids-exe
   main-is: Main.hs
   other-modules:
+      Init
       Paths_Asteroids
   hs-source-dirs:
       app

@@ -4,24 +4,24 @@
 
 
 
-module Being where
+module Being
+    (module Being,
+     module Pointed) where
 
 
---import qualified Data.Vector.Unboxed.Sized as VS
 import Graphics.Gloss.Data.Vector
 import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
 import Graphics.Gloss.Data.Color
 import Graphics.Gloss.Data.Picture
 
-
 import Control.Lens
-import GHC.TypeNats (KnownNat)
 import Data.Array.MArray
 import Control.Monad
-
-import Util
 import Control.Monad.ST
 import Data.Array.ST
+
+import Util
+import Pointed
 {-
  - This file describes all the physics, all the beings and how they interact
  - Beings can be divided into races, but a race is not limiting to what a being can do in potetential
@@ -36,31 +36,8 @@ type Timeout = Float
 type Health = Int
 type TimeSinceLastShot = Float
 
-
 data Phys = Phys {_pos :: Vector, _vel :: Vector, _mass :: Mass, _radius :: Radius} deriving (Eq, Show)
 makeLenses ''Phys
-
-
-data Pointed a = Pointed {_player :: a, _npo :: [a]}
-makeLenses ''Pointed
-
-toList :: Pointed a -> [a]
-toList (Pointed x xs) = x:xs
-
-fromList :: [a] -> Pointed a
-fromList (x:xs) = Pointed x xs
-fromList _ = error "empty list cannot be Pointed"
-
-instance Functor Pointed where
-    fmap f = fromList . fmap f . toList
-
-instance Semigroup (Pointed a) where
-    p <> q = fromList $ toList p <> toList q
-
-deriving instance Show a => Show (Pointed a)
-
-terminal :: a -> Pointed a
-terminal x = Pointed x []
 
 type Beings = Pointed Being
 
@@ -123,8 +100,6 @@ makeBeing r x v = Being (Phys x v baseMass (radiusBeing r) ) r baseHP lastFire (
                         baseMass = 1.0
 
 
-
-
 -- move assuming no gravity or collision
 freeFall :: Float -> Being -> Being
 freeFall dt = phys %~ freeFall' dt
@@ -132,15 +107,14 @@ freeFall dt = phys %~ freeFall' dt
 freeFall' :: Float -> Phys -> Phys
 freeFall' dt p = pos %~ (Vec.+ mulSV dt (p ^.vel)) $ p
 
+-- find normal vector in collision of two beings
 collide :: Being -> Being -> Maybe Vector
---Inputs 2 beings, outputs the position of their collision if there's a collision, nothing if there's no collission. 
 collide a b
     | d1 <= d2  = Just v
     | otherwise = Nothing where
         v = (a ^. phys . pos) Vec.- (b ^. phys . pos)
         d1 = magV v
         d2 = (a ^. phys . radius) + (b ^. phys . radius)
-
 
 -- elastic collision
 collisions :: Beings -> Beings
@@ -204,14 +178,4 @@ doCollisions bs = runST $ do
                 _       -> return ()
 
     getElems arr
-
-
-homeAtAI :: MoveAI
-homeAtAI self others = others ^. player . phys . pos Vec.- self ^. phys . pos
-
-floatAI :: MoveAI
-floatAI self others = v0
-
-aimAtAI :: AimAI
-aimAtAI _ others = Just $ others ^. player . phys . pos
 

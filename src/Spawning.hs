@@ -6,6 +6,7 @@ import Control.Lens
 
 import Util
 import Being
+import EnemyAI
 
 
 spawnTick :: Float

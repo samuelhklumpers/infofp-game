@@ -9,17 +9,11 @@ import Graphics.Gloss.Interface.IO.Interact
 import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
 import Control.Lens
 import Control.Monad.State
+import Data.Maybe
 
 import Being
 import World
-import Data.Maybe
-import Debug.Trace (traceShow)
-
-bulletspeed :: Float
-bulletspeed  = 300
-
-startPosMult :: Float
-startPosMult = 1.0
+import Config
 
 
 shootBullet :: Being -> Race -> Vector -> Maybe Being
