@@ -31,7 +31,7 @@ toRate interval = perTick where
     perTick = perSecond * spawnTick
 
 baseSpawnRates :: SpawnData
-baseSpawnRates = SpawnData 0 (toRate 2.0) (toRate secondsPerEnemy)
+baseSpawnRates = SpawnData 0 (toRate secondsPerAsteroid) (toRate secondsPerEnemy) (toRate secondsPerChaser)
 
 spawnStep :: Float -> World -> World
 spawnStep dt = execState $ do
@@ -45,6 +45,8 @@ spawnStep dt = execState $ do
     forM_ [1..n] $ \_ -> do -- lol
         aRate <- use (spawns . asteroidRate)
         spawnRoll w aRate Asteroid 
+        cRate <- use (spawns . chaserRate)
+        spawnRoll w aRate Chaser
         eRate <- use (spawns . enemyRate)
         spawnRoll w eRate (Enemy  aimAtAI floatAI)
 
@@ -65,6 +67,5 @@ spawnRoll w rate what = do
             else return Nothing
 
         case ret of
-            Just (x, y, vx, vy) -> do spawnBeing (makeBeing what (x, y) (vx, vy))
-			              spawnBeing (makeBeing Chaser (x + 100, y) (vx, vy))	
+            Just (x, y, vx, vy) -> spawnBeing (makeBeing what (x, y) (vx, vy))
             Nothing -> return ()
