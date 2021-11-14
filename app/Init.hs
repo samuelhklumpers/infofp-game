@@ -20,7 +20,6 @@ import World
 import Being
 import Controls
 import Shooting
-import Util
 import Statistics
 import Reaping
 import Spawning
@@ -31,7 +30,7 @@ import Rules
 
 
 window :: Display
-window = InWindow "Awesome Asteroids Game" (w, h) (10, 10)
+window = InWindow "Awesome Asteroids Game" (windowWidth, windowHeight) (10, 10)
 
 maximum' :: [Identity Int] -> Identity Int
 maximum' [] = 0

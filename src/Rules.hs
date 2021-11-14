@@ -1,33 +1,23 @@
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments #-}
-
 module Rules where
 
-import Graphics.Gloss.Interface.Pure.Game
-import Graphics.Gloss.Data.Picture
 
 import Graphics.Gloss.Data.Vector
 import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
-import Graphics.Gloss.Data.Color (greyN)
-import GHC.TypeNats (KnownNat)
 import Data.Functor.Identity
 import Data.List
 import Control.Lens
 import Control.Monad.State
-import Control.Monad
 import Data.Map (empty, member, Map)
-import System.Random.Stateful
 
 import World
 import Being
-import Controls
 import Shooting
 import Config
-import Util
+import Controls
 import Statistics
+import Physics
 import Reaping
 import Spawning
-import Drawing
 import Animations
 {-
  - This file is where all steps come together
@@ -60,9 +50,6 @@ reloadStep dt = do
 reloadBeing :: Float -> Being -> Being
 reloadBeing dt b = b & timeSinceLastShot +~ dt
 
-anistep :: Float -> World -> World
-anistep dt = execState $ do timedAnimations %= animationsStep dt
-
 gameEndStep :: StateT World IO ()
 gameEndStep = do
     w <- get
@@ -82,31 +69,18 @@ physicsStep dt =
 scoreStep :: Float -> World -> World
 scoreStep dt = stats . survived +~ Identity dt
 
-toggleAccel :: Vector -> Bool -> Vector -> Vector
-toggleAccel v b w
-    | b         = v Vec.+ w
-    | otherwise = w
-
-getAccel :: MotionControl -> Vector
-getAccel (MotionControl u r d l) =
-    toggleAccel e2 u $
-    toggleAccel e1 r $
-    toggleAccel (Vec.negate e2) d $
-    toggleAccel (Vec.negate e1) l v0
-
-
 userStep :: Float -> World -> World
 userStep dt = execState $ do
     a <- uses (userIn . moving) getAccel
     beings . player . phys . vel %= (Vec.+ playerAccel `mulSV` a)
 
-
 -- do physics movement, ignoring gravity, collisions, or other sources of acceleration
 freeFallStep :: Float -> World -> World
 freeFallStep dt w@World {_beings = b} = w {_beings = fmap (freeFall dt) b}
-
 
 -- do physics collisions, ignoring death on contact and other effects
 collisionStep :: World -> World
 collisionStep = beings %~ collisions
 
+anistep :: Float -> World -> World
+anistep dt = execState $ do timedAnimations %= animationsStep dt

@@ -6,7 +6,7 @@ import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
 import Control.Lens
 
 import Being
-import Util
+import Config
 
 
 homeAtAI :: MoveAI

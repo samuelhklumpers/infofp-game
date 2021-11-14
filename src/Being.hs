@@ -15,12 +15,8 @@ import Graphics.Gloss.Data.Color
 import Graphics.Gloss.Data.Picture
 
 import Control.Lens
-import Data.Array.MArray
-import Control.Monad
-import Control.Monad.ST
-import Data.Array.ST
 
-import Util
+
 import Pointed
 {-
  - This file describes all the physics, all the beings and how they interact
@@ -40,7 +36,6 @@ data Phys = Phys {_pos :: Vector, _vel :: Vector, _mass :: Mass, _radius :: Radi
 makeLenses ''Phys
 
 type Beings = Pointed Being
-
 
 type AimAI = Being -> Beings -> Maybe Vector
 type MoveAI = Being -> Beings -> Vector
@@ -94,10 +89,6 @@ scoreBeing Chaser    = 15
 -- End of Race starting conditions, don't forget the collision harm effects!
 -- and don't forget to actually spawn them
 
-canShoot :: Being -> Bool 
-canShoot b = case (b^.turreted) of 
-                NoTurret -> False 
-                Turret timeout -> timeout < (b^.timeSinceLastShot)
 
 makeBeing :: Race -> Vector -> Vector -> Being
 makeBeing r x v = Being (Phys x v baseMass (radiusBeing r) ) r baseHP lastFire (turretBeing r) where
@@ -106,51 +97,12 @@ makeBeing r x v = Being (Phys x v baseMass (radiusBeing r) ) r baseHP lastFire (
                         baseMass = 1.0
 
 
--- move assuming no gravity or collision
-freeFall :: Float -> Being -> Being
-freeFall dt = phys %~ freeFall' dt
-
-freeFall' :: Float -> Phys -> Phys
-freeFall' dt p = pos %~ (Vec.+ mulSV dt (p ^.vel)) $ p
-
--- find normal vector in collision of two beings
-collide :: Being -> Being -> Maybe Vector
-collide a b
-    | d1 <= d2  = Just v
-    | otherwise = Nothing where
-        v = (a ^. phys . pos) Vec.- (b ^. phys . pos)
-        d1 = magV v
-        d2 = (a ^. phys . radius) + (b ^. phys . radius)
-
--- elastic collision
-collisions :: Beings -> Beings
-collisions = fromList . doCollisions . toList
-
-
--- It is sufficient to model a bump as a collision of 2 point particles
-bump :: Being -> Being -> (Being, Being)
-bump a b = (phys . vel .~ v1 $ a, phys . vel .~ v2 $ b)
-    where
-        cv = collide a b
-
-        u1 = a ^. phys . vel
-        u2 = b ^. phys . vel
-        m1 = a ^. phys . mass
-        m2 = b ^. phys . mass
-
-        v1 = mulSV ((m1 - m2) / (m1 + m2)) u1 Vec.+ mulSV (2 * m2 / (m1 + m2)) u2
-        v2 = mulSV (2 * m1 / (m1 + m2)) u1 Vec.+ mulSV ((m2 - m1) / (m1 + m2)) u2
-
-
 harm :: Being -> Being -> (Being, Being)
 harm a b = case a ^. race of
     Player {} -> case b ^. race of
         Player {} -> error "this game was supposed to be single-player..."
         _         -> (health -~ 1 $ a, health -~ 1 $ b)
-    Bullet {} -> case b ^. race of
-        --Bullet {} -> (a, b) 
-        --If you want bullets to bounce turn this comment of
-        _         -> (health -~ 1 $ a, health -~ 1 $ b)
+    Bullet {} -> (health -~ 1 $ a, health -~ 1 $ b)
     Asteroid {} -> case b ^. race of
         Player {} -> harm b a
         Bullet {} -> harm b a
@@ -161,30 +113,4 @@ harm a b = case a ^. race of
     Chaser {} -> case b^.race of 
         Chaser {} -> (a,b)
         _         -> harm b a 
-
-
-doCollisions :: [Being] -> [Being]
-doCollisions bs = runST $ do
-    let n = length bs
-
-    arr <- newListArray (1, n) bs :: ST s (STArray s Int Being)
-
-    forM_ [1..n] $ \i ->
-        forM_ [i+1..n] $ \j -> do
-            a <- readArray arr i
-            b <- readArray arr j
-
-            let cv = collide a b
-
-            case cv of
-                Just _  -> do
-                    let (a', b') = bump a b
-                    let (a'', b'') = harm a' b'
-
-                    writeArray arr i a''
-                    writeArray arr j b''
-
-                _       -> return ()
-
-    getElems arr
 

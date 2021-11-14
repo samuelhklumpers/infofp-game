@@ -16,6 +16,11 @@ import World
 import Config
 
 
+canShoot :: Being -> Bool
+canShoot b = case b ^. turreted of
+                NoTurret -> False
+                Turret timeout -> timeout < b ^. timeSinceLastShot
+
 shootBullet :: Being -> Race -> Vector -> Maybe Being
 --In principe kan alles schieten, leuk als je enemies maakt die turrets kunnen plaatsen op asteroids zodat asteroids op de player schieten. 
 shootBullet shooter ammo targetpos  | canShoot shooter = Just (makeBeing ammo startpos velocity) 

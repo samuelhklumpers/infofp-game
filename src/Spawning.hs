@@ -2,9 +2,10 @@ module Spawning where
 
 import World
 import Control.Monad.State
+import System.Random.Stateful
 import Control.Lens
 
-import Util
+import Config
 import Being
 import EnemyAI
 
@@ -14,12 +15,14 @@ import EnemyAI
  - Also there are some number to make the spawn location nice
  - Also here is determined when certain enemies start spawning
  -}
+ 
 
-tEnemies :: Float 
-tEnemies = 10
+uniformFloat :: Float -> Float -> State StdGen Float
+uniformFloat l h = state $ uniformR (l, h)
 
-spawnTick :: Float
-spawnTick = 0.1 -- seconds
+uniformBool :: State StdGen Bool
+uniformBool = state uniform
+
 
 -- rates as in T ~ Exp(1/t), t in spawnTicks
 toRate :: Float -> Float 
@@ -27,10 +30,8 @@ toRate interval = perTick where
     perSecond = 1 / interval
     perTick = perSecond * spawnTick
 
-
 baseSpawnRates :: SpawnData
-baseSpawnRates = SpawnData 0 (toRate 2.0) (toRate 2.0)
-
+baseSpawnRates = SpawnData 0 (toRate 2.0) (toRate secondsPerEnemy)
 
 spawnStep :: Float -> World -> World
 spawnStep dt = execState $ do
@@ -47,17 +48,18 @@ spawnStep dt = execState $ do
         eRate <- use (spawns . enemyRate)
         spawnRoll w eRate (Enemy  aimAtAI floatAI)
 
+
 spawnRoll :: Float -> Float -> Race -> StateT World Identity ()
 spawnRoll w rate what = do
         ret <- zoom randomizer $ do
-            roll <- uniformF 0.0 1.0
+            roll <- uniformFloat 0.0 1.0
 
             if roll < rate then do
-                x  <- uniformF (-w) w
-                vx <- uniformF (-20) 20
-                vy <- uniformF (-40) (-200)
-                let y  =  300.0
-                spawnfromabove <- uniformbool
+                x  <- uniformFloat (-w) w
+                vx <- uniformFloat spawnVXMin spawnVXMax
+                vy <- uniformFloat spawnVYMin spawnVYMax
+                let y = 7 * fromIntegral windowHeight / 16
+                spawnfromabove <- uniformBool
                 if spawnfromabove then return $ Just (x, y, vx, vy)
                 else return $ Just (x, -y, vx, -vy)
             else return Nothing
