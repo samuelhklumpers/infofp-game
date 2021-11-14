@@ -44,13 +44,14 @@ type Beings = Pointed Being
 
 type AimAI = Being -> Beings -> Maybe Vector
 type MoveAI = Being -> Beings -> Vector
-data Race = Player | Asteroid | Bullet | Enemy AimAI MoveAI
+data Race = Player | Asteroid | Bullet | Enemy AimAI MoveAI | Chaser
 
 instance Eq Race where
-    Player {} == Player {} = True
+    Player {}   == Player {}   = True
     Asteroid {} == Asteroid {} = True
-    Enemy {} == Enemy {} = True
-    Bullet {} == Bullet {} = True
+    Enemy {}    == Enemy {}    = True
+    Bullet {}   == Bullet {}   = True
+    Chaser {}   == Chaser {}   = True
     _ == _ = False
 
 data Turreted = Turret Timeout | NoTurret deriving (Eq, Show)
@@ -68,25 +69,30 @@ radiusBeing Player   {} = 16
 radiusBeing Enemy    {} = 16
 radiusBeing Asteroid {} = 24
 radiusBeing Bullet   {} = 8
+radiusBeing Chaser   {} = 10
 
 turretBeing :: Race -> Turreted
 turretBeing Player   = Turret 0.3
 turretBeing Enemy {} = Turret 1.0
 turretBeing Asteroid = NoTurret
 turretBeing Bullet   = NoTurret
+turretBeing Chaser   = NoTurret
 
 colorBeing :: Race -> Color
 colorBeing Player {}   = blue
 colorBeing Enemy {}    = red
 colorBeing Asteroid {} = greyN 0.5
 colorBeing Bullet {}   = yellow
+colorBeing Chaser {}   = green
 
 scoreBeing :: Race -> Int
 scoreBeing Player {} = 0
-scoreBeing Enemy {}  = 10
+scoreBeing Enemy {}  = 20
 scoreBeing Asteroid  = 10
 scoreBeing Bullet    = 0
+scoreBeing Chaser    = 15
 -- End of Race starting conditions, don't forget the collision harm effects!
+-- and don't forget to actually spawn them
 
 canShoot :: Being -> Bool 
 canShoot b = case (b^.turreted) of 
@@ -152,6 +158,9 @@ harm a b = case a ^. race of
     Enemy {} -> case b ^. race of
         Enemy {}  -> (a, b)
         _         -> harm b a
+    Chaser {} -> case b^.race of 
+        Chaser {} -> (a,b)
+        _         -> harm b a 
 
 
 doCollisions :: [Being] -> [Being]
