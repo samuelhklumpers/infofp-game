@@ -32,6 +32,7 @@ step dt = execStateT $ do
     case gs of
         Playing -> do
             modify $ spawnStep dt
+            touhouStep
             reloadStep dt
             modify $ fireStep dt
             modify $ userStep dt
@@ -42,6 +43,11 @@ step dt = execStateT $ do
             modify $ anistep dt
         PlayerDied -> gameEndStep
         _ -> return ()
+
+touhouStep :: StateT World IO ()
+touhouStep = do
+    t <- uses (stats . survived) runIdentity
+    touhouFactor .= min (t / 60) 1.0
 
 reloadStep :: Float -> StateT World IO ()
 reloadStep dt = do

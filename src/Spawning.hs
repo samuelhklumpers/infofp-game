@@ -31,10 +31,11 @@ toRate interval = perTick where
     perTick = perSecond * spawnTick
 
 baseSpawnRates :: SpawnData
-baseSpawnRates = SpawnData 0 (toRate 2.0) (toRate secondsPerEnemy)
+baseSpawnRates = SpawnData 0 (toRate secondsPerAsteroid) (toRate secondsPerEnemy)
 
 spawnStep :: Float -> World -> World
 spawnStep dt = execState $ do
+    touhou <- use touhouFactor
     spawns . timeSinceLast += dt
     t <- use (spawns . timeSinceLast)
     (w, h) <- use frame
@@ -43,14 +44,16 @@ spawnStep dt = execState $ do
     spawns . timeSinceLast -= fromIntegral n * spawnTick
 
     forM_ [1..n] $ \_ -> do -- lol
-        aRate <- use (spawns . asteroidRate)
+        aRate <- uses (spawns . asteroidRate) (* (1.0 + 0.5 * touhou))
         spawnRoll w aRate Asteroid 
-        eRate <- use (spawns . enemyRate)
+        eRate <- uses (spawns . enemyRate) (* (1.0 + 0.5 * touhou))
         spawnRoll w eRate (Enemy  aimAtAI floatAI)
 
 
 spawnRoll :: Float -> Float -> Race -> StateT World Identity ()
 spawnRoll w rate what = do
+        touhou <- use touhouFactor
+
         ret <- zoom randomizer $ do
             roll <- uniformFloat 0.0 1.0
 
@@ -65,5 +68,5 @@ spawnRoll w rate what = do
             else return Nothing
 
         case ret of
-            Just (x, y, vx, vy) -> spawnBeing (makeBeing what (x, y) (vx, vy))
+            Just (x, y, vx, vy) -> spawnBeing (makeBeing what touhou (x, y) (vx, vy))
             Nothing -> return ()
