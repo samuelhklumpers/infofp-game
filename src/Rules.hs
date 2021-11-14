@@ -19,6 +19,7 @@ import Physics
 import Reaping
 import Spawning
 import Animations
+import Chasing
 {-
  - This file is where all steps come together
  - also the initial value of the world is loaded here
@@ -36,6 +37,7 @@ step dt = execStateT $ do
             modify $ fireStep dt
             modify $ userStep dt
             modify $ aiStep dt
+            modify chaseStep
             modify $ physicsStep dt
             modify damageStep
             modify $ scoreStep dt

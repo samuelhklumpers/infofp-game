@@ -65,5 +65,6 @@ spawnRoll w rate what = do
             else return Nothing
 
         case ret of
-            Just (x, y, vx, vy) -> spawnBeing (makeBeing what (x, y) (vx, vy))
+            Just (x, y, vx, vy) -> do spawnBeing (makeBeing what (x, y) (vx, vy))
+			              spawnBeing (makeBeing Chaser (x + 100, y) (vx, vy))	
             Nothing -> return ()
