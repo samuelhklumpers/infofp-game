@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 
-module WorldInit where
+module World where
 
 import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss.Data.Picture

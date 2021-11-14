@@ -1,9 +1,3 @@
-{-
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TemplateHaskell #-}
--}
-
-
 module Util where
 
 import Graphics.Gloss.Data.Vector

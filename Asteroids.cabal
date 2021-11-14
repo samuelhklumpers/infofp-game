@@ -28,15 +28,15 @@ library
   exposed-modules:
       Animations
       Being
-      Control2
+      Controls
       Drawing
       Reaping
+      Rules
       Shooting
       Spawning
       Statistics
       Util
-      WorldExec
-      WorldInit
+      World
   other-modules:
       Paths_Asteroids
   hs-source-dirs:

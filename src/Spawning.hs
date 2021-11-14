@@ -1,6 +1,6 @@
 module Spawning where
 
-import WorldInit
+import World
 import Control.Monad.State
 import Control.Lens
 

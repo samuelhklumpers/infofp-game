@@ -11,7 +11,7 @@ import Control.Lens
 import Control.Monad.State
 
 import Being
-import WorldInit
+import World
 import Data.Maybe
 import Debug.Trace (traceShow)
 
@@ -25,12 +25,12 @@ startPosMult = 1.0
 shootBullet :: Being -> Race -> Vector -> Maybe Being
 --In principe kan alles schieten, leuk als je enemies maakt die turrets kunnen plaatsen op asteroids zodat asteroids op de player schieten. 
 shootBullet shooter ammo targetpos  | canShoot shooter = Just (makeBeing ammo startpos velocity) 
-                             	    | otherwise    = Nothing where 
-                             	        time       = shooter ^. timeSinceLastShot
-                             	        shooterpos = shooter ^. phys. pos
-                             	        direction  = normalizeV (targetpos Vec.- shooterpos)
-                             	        velocity   = bulletspeed `mulSV` direction Vec.+ shooter ^. phys . vel
-                             	        startpos   = shooterpos  Vec.+ ((startPosMult * (shooter ^. phys.radius + radiusBeing ammo)) `mulSV` direction)
+                                    | otherwise    = Nothing where 
+                                        time       = shooter ^. timeSinceLastShot
+                                        shooterpos = shooter ^. phys. pos
+                                        direction  = normalizeV (targetpos Vec.- shooterpos)
+                                        velocity   = bulletspeed `mulSV` direction Vec.+ shooter ^. phys . vel
+                                        startpos   = shooterpos  Vec.+ ((startPosMult * (shooter ^. phys.radius + radiusBeing ammo)) `mulSV` direction)
 
 playerShot :: World -> Maybe Being
 playerShot w = do

@@ -17,7 +17,7 @@ import Data.List
 import Statistics
 import Being
 import Animations
-import WorldInit
+import World
 
 -- replace with actual screen bounds if necessary
 isInBounds :: Frame -> Vector -> Bool

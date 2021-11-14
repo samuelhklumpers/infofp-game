@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 
-module WorldExec where
+module Rules where
 
 import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss.Data.Picture
@@ -18,18 +18,16 @@ import Control.Monad
 import Data.Map (empty, member, Map)
 import System.Random.Stateful
 
-import WorldInit
+import World
 import Being
-import Control2
+import Controls
 import Shooting
 import Util
 import Statistics
 import Reaping
 import Spawning
 import Drawing
-import Reaping
 import Animations
-import Spawning
 {-
  - This file is where all steps come together
  - also the initial value of the world is loaded here
@@ -37,7 +35,7 @@ import Spawning
 
 
 handler :: Event -> World -> World
-handler = Control2.handleInput
+handler = Control.handleInput
 
 step :: Float -> World -> IO World
 step dt = execStateT $ do

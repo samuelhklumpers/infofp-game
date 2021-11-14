@@ -1,6 +1,6 @@
 module Drawing where
 
-import WorldInit
+import World
 import Being
 import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss.Data.Picture

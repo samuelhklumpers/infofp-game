@@ -1,12 +1,12 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 
-module Control2 where
+module Controls where
 {-In the game, we keep track of the user input and handle the user input in this module
  -}
 
 
-import WorldInit
+import World
 import Shooting
 import Being
 import Graphics.Gloss.Interface.Pure.Game

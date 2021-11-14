@@ -15,14 +15,14 @@ import qualified Data.Vector.Unboxed.Sized as VS
 import Control.Exception
 import System.Exit
 
-import WorldInit
-import WorldExec
+import World
+import Rules
 import Statistics
 import Util
 import Drawing
 {-
  - This module uses the statistics loader
- - and runs the game as specified in WorldExec
+ - and runs the game as specified in Rules
  -}
 
 w :: Int
