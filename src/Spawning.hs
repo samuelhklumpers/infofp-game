@@ -33,7 +33,7 @@ baseSpawnRates :: SpawnData
 baseSpawnRates = SpawnData 0 (toRate secondsPerAsteroid) (toRate secondsPerEnemy) (toRate secondsPerChaser)
 
 touhouSpawnFactor :: Float -> Float -> Float
-touhouSpawnFactor t r = r * (1.0 + 1.0 * t)
+touhouSpawnFactor t r = r * (1.0 + 2.0 * t)
 
 -- spawn new beings randomly
 spawnStep :: Float -> World -> World
@@ -52,10 +52,10 @@ spawnStep dt = execState $ do
         spawnRoll w aRate Asteroid 
         
         cRate <- uses (spawns . chaserRate) (touhouSpawnFactor touhou)
-        if (time > 10 ) then spawnRoll w cRate Chaser else return()
+        if (time > chaserStartTime) then spawnRoll w cRate Chaser else return()
 
         eRate <- uses (spawns . enemyRate) (touhouSpawnFactor touhou)
-        if (time > 20) then  spawnRoll w eRate (Enemy  aimAtAI floatAI) else return()
+        if (time > enemyStartTime) then  spawnRoll w eRate (Enemy  aimAtAI floatAI) else return()
 
 spawnRoll :: Float -> Float -> Race -> StateT World Identity ()
 spawnRoll w rate what = do

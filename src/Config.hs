@@ -7,6 +7,7 @@ import Graphics.Gloss.Data.Vector
 import Control.Monad.State
 
 import System.Random
+import Data.Functor.Identity
 
 
 windowWidth :: Int
@@ -53,6 +54,12 @@ secondsPerAsteroid = 3.0
 
 secondsPerChaser :: Float
 secondsPerChaser = 5.0
+
+chaserStartTime :: Identity Float
+chaserStartTime = 10
+
+enemyStartTime :: Identity Float
+enemyStartTime = 20
 
 spawnVXMin :: Float
 spawnVXMin = -20

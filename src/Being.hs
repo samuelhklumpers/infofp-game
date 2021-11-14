@@ -88,11 +88,11 @@ scoreBeing Bullet    = 0
 scoreBeing Chaser    = 15
 
 beingHP :: Race -> Int
-beingHP Player {}   = 3
-beingHP Enemy {}    = 2
-beingHP Asteroid {} = 3
+beingHP Player {}   = 1
+beingHP Enemy {}    = 1
+beingHP Asteroid {} = 2
 beingHP Bullet {}   = 1
-beingHP Chaser      = 2
+beingHP Chaser      = 1
 
 beingMass :: Race -> Float
 beingMass Player {}   = 1.0
