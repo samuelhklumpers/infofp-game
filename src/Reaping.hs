@@ -18,32 +18,25 @@ import Statistics
 import Being
 import Animations
 import WorldInit
-
--- replace with actual screen bounds if necessary
+{-
+ - this module handles garbage collection and score collection
+ -}
 isInBounds :: Frame -> Vector -> Bool
 --isInBounds f v = let (x1, y1) = v in let (x2, y2) = f in
 isInBounds (x2,y2) (x1,y1) = -- = let (x1, y1) = v in let (x2, y2) = f in
     -x2 <= x1 && x1 <= x2 && -y2 <= y1 && y1 <= y2
 
 
--- mark everybody that gets hit, e.g. _player hit by bullet -> set damage, asteroid hit by bullet -> exploding, _player hit by asteroid -> death animation 
---
 
 damageStep :: World -> World
 damageStep = execState $ do
     player <- use (beings . player)
     bs <- uses beings Being.toList
     fr <- use frame
-    --score <- use (stats.score)
 
-    let (visible, gone) = partition (isInBounds fr . (^. phys . pos)) bs 
+    let (visible, gone)  = partition (isInBounds fr . (^. phys . pos)) bs 
     let (survivors,dead) = partition ( (>0) . (^. health)) visible
     let corpselist       = map death_to_animation dead
-
---    let bs'        = filter (isInBounds fr . (^. phys . pos)) bs -- maybe prevent deleting the player
---    let bs''       = filter ((>0) . (^. health)) bs'
---    let deathlist  = filter ((<=0).(^.health)) bs'
-    let corpselist = map death_to_animation dead
 
     timedAnimations <>= corpselist
     
@@ -56,7 +49,3 @@ damageStep = execState $ do
 
     beings .= Being.fromList survivors
 
---implosioncolor = red
---death_to_animation :: Being -> TimedAnimation
---death_to_animation b = (Implosion implosioncolor (b^.phys.pos)  , r) where r = b^.phys.radius
---death_to_animation b = (Explosion implosioncolor (b^.phys.pos) (2*r), r) where r = b^.phys.radius
