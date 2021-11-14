@@ -1,11 +1,13 @@
 module Spawning where
 
-import WorldInit
+import World
 import Control.Monad.State
 import Control.Lens
 
 import Util
 import Being
+import EnemyAI
+
 {- 
  - This module handles the spawning of new enemies
  - We use randomness for the location

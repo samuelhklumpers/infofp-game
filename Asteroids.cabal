@@ -28,15 +28,18 @@ library
   exposed-modules:
       Animations
       Being
-      Control2
+      Config
+      Controls
       Drawing
+      EnemyAI
+      Pointed
       Reaping
+      Rules
       Shooting
       Spawning
       Statistics
       Util
-      WorldExec
-      WorldInit
+      World
   other-modules:
       Paths_Asteroids
   hs-source-dirs:
@@ -60,6 +63,7 @@ library
 executable Asteroids-exe
   main-is: Main.hs
   other-modules:
+      Init
       Paths_Asteroids
   hs-source-dirs:
       app

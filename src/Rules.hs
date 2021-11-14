@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 
-module WorldExec where
+module Rules where
 
 import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss.Data.Picture
@@ -18,26 +18,22 @@ import Control.Monad
 import Data.Map (empty, member, Map)
 import System.Random.Stateful
 
-import WorldInit
+import World
 import Being
-import Control2
+import Controls
 import Shooting
+import Config
 import Util
 import Statistics
 import Reaping
 import Spawning
 import Drawing
-import Reaping
 import Animations
-import Spawning
 {-
  - This file is where all steps come together
  - also the initial value of the world is loaded here
  -}
 
-
-handler :: Event -> World -> World
-handler = Control2.handleInput
 
 step :: Float -> World -> IO World
 step dt = execStateT $ do
@@ -67,9 +63,6 @@ reloadBeing dt b = b & timeSinceLastShot +~ dt
 anistep :: Float -> World -> World
 anistep dt = execState $ do timedAnimations %= animationsStep dt
 
-highscoreSize :: Int
-highscoreSize = 8
-
 gameEndStep :: StateT World IO ()
 gameEndStep = do
     w <- get
@@ -88,10 +81,6 @@ physicsStep dt =
 
 scoreStep :: Float -> World -> World
 scoreStep dt = stats . survived +~ Identity dt
-
-
-playerAccel :: Float
-playerAccel = 8
 
 toggleAccel :: Vector -> Bool -> Vector -> Vector
 toggleAccel v b w
@@ -121,22 +110,3 @@ freeFallStep dt w@World {_beings = b} = w {_beings = fmap (freeFall dt) b}
 collisionStep :: World -> World
 collisionStep = beings %~ collisions
 
-
--- tests/initialization
-testPlayer :: Being
-testPlayer = makeBeing Player v0 v0
-
-
-testWorld :: Frame -> Stats -> [Stats] -> IO World
-testWorld frame stats' scores = do
-    rng <- newStdGen
-
-    return $ World
-        frame
-        (Pointed testPlayer [])
-        blankInput
-        stats'
-        baseSpawnRates
-        rng Playing
-        scores
-        []

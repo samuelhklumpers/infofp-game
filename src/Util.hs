@@ -1,9 +1,3 @@
-{-
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TemplateHaskell #-}
--}
-
-
 module Util where
 
 import Graphics.Gloss.Data.Vector
@@ -17,7 +11,7 @@ uniformF :: Float -> Float -> State StdGen Float
 uniformF l h = state $ uniformR (l, h)
 
 uniformbool :: State StdGen Bool
-uniformbool = state $ uniform
+uniformbool = state uniform
 
 v0 :: Vector
 v0 = (0, 0)

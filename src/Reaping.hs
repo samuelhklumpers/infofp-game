@@ -17,7 +17,8 @@ import Data.List
 import Statistics
 import Being
 import Animations
-import WorldInit
+import World
+
 {-
  - this module handles garbage collection and score collection
  -}

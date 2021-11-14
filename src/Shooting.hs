@@ -9,28 +9,22 @@ import Graphics.Gloss.Interface.IO.Interact
 import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
 import Control.Lens
 import Control.Monad.State
+import Data.Maybe
 
 import Being
-import WorldInit
-import Data.Maybe
-import Debug.Trace (traceShow)
-
-bulletspeed :: Float
-bulletspeed  = 300
-
-startPosMult :: Float
-startPosMult = 1.0
+import World
+import Config
 
 
 shootBullet :: Being -> Race -> Vector -> Maybe Being
 --In principe kan alles schieten, leuk als je enemies maakt die turrets kunnen plaatsen op asteroids zodat asteroids op de player schieten. 
 shootBullet shooter ammo targetpos  | canShoot shooter = Just (makeBeing ammo startpos velocity) 
-                             	    | otherwise    = Nothing where 
-                             	        time       = shooter ^. timeSinceLastShot
-                             	        shooterpos = shooter ^. phys. pos
-                             	        direction  = normalizeV (targetpos Vec.- shooterpos)
-                             	        velocity   = bulletspeed `mulSV` direction Vec.+ shooter ^. phys . vel
-                             	        startpos   = shooterpos  Vec.+ ((startPosMult * (shooter ^. phys.radius + radiusBeing ammo)) `mulSV` direction)
+                                    | otherwise    = Nothing where 
+                                        time       = shooter ^. timeSinceLastShot
+                                        shooterpos = shooter ^. phys. pos
+                                        direction  = normalizeV (targetpos Vec.- shooterpos)
+                                        velocity   = bulletspeed `mulSV` direction Vec.+ shooter ^. phys . vel
+                                        startpos   = shooterpos  Vec.+ ((startPosMult * (shooter ^. phys.radius + radiusBeing ammo)) `mulSV` direction)
 
 playerShot :: World -> Maybe Being
 playerShot w = do
