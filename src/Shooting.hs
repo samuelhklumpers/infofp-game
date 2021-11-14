@@ -1,5 +1,9 @@
 module Shooting where
-
+{-
+ - This module handles how we proces a shot, and has the shooting AI of enemies which try to shoot the player
+ - When a Being tries to shoot a certain piece of ammo, we first check whether that being is allowed to shoot
+ - then create a Bullet of specified ammo in the direction the shooter is aiming. 
+ -}
 import Graphics.Gloss.Data.Vector
 import Graphics.Gloss.Interface.IO.Interact
 import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
@@ -10,9 +14,6 @@ import Being
 import WorldInit
 import Data.Maybe
 import Debug.Trace (traceShow)
-
-shoottimeout :: TimeSinceLastShot
-shoottimeout = 0.3
 
 bulletspeed :: Float
 bulletspeed  = 300

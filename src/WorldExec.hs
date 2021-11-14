@@ -30,31 +30,14 @@ import Drawing
 import Reaping
 import Animations
 import Spawning
-
+{-
+ - This file is where all steps come together
+ - also the initial value of the world is loaded here
+ -}
 
 
 handler :: Event -> World -> World
 handler = Control2.handleInput
-
-{-
--- step
-step :: Float -> World -> World
-step dt = execState $ do
-    p <- use (userIn . pausing)
-
-    unless p $ do
-        modify $ fireStep dt
-        modify damageStep
-        modify $ physicsStep dt
-        modify $ userStep dt
-        modify $ scoreStep dt
-        modify $ spawnStep dt
-        modify $ anistep dt 
-
-anistep :: Float -> World -> World  
-anistep dt = execState $ do timedAnimations %= (animationsStep dt)
-
--}
 
 step :: Float -> World -> IO World
 step dt = execStateT $ do
@@ -139,7 +122,7 @@ collisionStep :: World -> World
 collisionStep = beings %~ collisions
 
 
--- tests
+-- tests/initialization
 testPlayer :: Being
 testPlayer = makeBeing Player v0 v0
 

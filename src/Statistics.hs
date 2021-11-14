@@ -1,7 +1,11 @@
 {-# LANGUAGE DeriveGeneric, FlexibleInstances, StandaloneDeriving, TemplateHaskell #-}
 
 module Statistics where
-
+{-
+ - This module handles the file interaction with the highscores file
+ - also the actual score is described and how we show it
+ - If you want to keep track of additional things, add it here and don't forget to show it in the Show instance
+ -}
 import Data.Aeson
 import Data.Aeson.Types
 import Data.Aeson.Default
@@ -40,8 +44,8 @@ instance ToJSON (Stats' Identity)
 
 instance Show (Stats' Identity) where
     show s = "Attempt: "    ++ show (runIdentity $ _attempt s) ++
-             ", survived: " ++ takeWhile (/= '.') (show (runIdentity $ _survived s)) ++ " seconds" ++
-			 ", score : "   ++ show (_score s) ++ "points"
+             ", survived: " ++ takeWhile (/= '.') (show (runIdentity $ _survived s)) ++ " seconds" ++  
+             ", score : "   ++ show (_score s) ++ "points"
 
 deriving instance Eq (Stats' Identity)
 

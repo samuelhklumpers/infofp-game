@@ -11,7 +11,12 @@ import Animations
 import Control.Monad.State
 import Control.Lens
 import Statistics
-
+{-
+ - This module handles everything that needs to be drawn in the world, 
+ - we draw the beings and the animations in a normal step
+ - and when the game is over our paused we draw that as well
+ - There are sadly some magic numbers here which might need changing if the framesize changes
+ -}
 
 writeScreen :: String -> Picture -- some random numbers, gloss isn't too transparent on this stuff
 writeScreen str = scale 0.12 0.12 $ translate (-400) (-200) $ Color white $ Text str
@@ -43,12 +48,3 @@ drawBeing Being {_phys = phys, _race = race}
         Phys {_pos = p, _radius = r} = phys
         (x, y) = p
         c = colorBeing race
-{-
-colorBeing :: Race -> Color
-colorBeing race = case race of
-    Player _    -> blue
-    Enemy _     -> red
-    Asteroid    -> greyN 0.5
-    Bullet      -> yellow
--}
-

@@ -2,6 +2,9 @@
 
 
 module Control2 where
+{-In the game, we keep track of the user input and handle the user input in this module
+ -}
+
 
 import WorldInit
 import Shooting
@@ -11,7 +14,6 @@ import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
 import Control.Lens
 import Control.Monad.State
 import Data.Maybe
-
 
 isDown :: Event -> Bool
 isDown (EventKey _ s _ _) = s == Down
