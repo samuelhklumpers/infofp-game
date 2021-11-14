@@ -28,6 +28,7 @@ library
   exposed-modules:
       Animations
       Being
+      Chasing
       Config
       Controls
       Drawing

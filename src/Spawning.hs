@@ -30,7 +30,10 @@ toRate interval = perTick where
     perTick = perSecond * spawnTick
 
 baseSpawnRates :: SpawnData
-baseSpawnRates = SpawnData 0 (toRate secondsPerAsteroid) (toRate secondsPerEnemy)
+baseSpawnRates = SpawnData 0 (toRate secondsPerAsteroid) (toRate secondsPerEnemy) (toRate secondsPerChaser)
+
+touhouSpawnFactor :: Float -> Float -> Float
+touhouSpawnFactor t r = r * (1.0 + 1.0 * t)
 
 -- spawn new beings randomly
 spawnStep :: Float -> World -> World
@@ -44,9 +47,11 @@ spawnStep dt = execState $ do
     spawns . timeSinceLast -= fromIntegral n * spawnTick
 
     forM_ [1..n] $ \_ -> do
-        aRate <- uses (spawns . asteroidRate) (* (1.0 + 0.5 * touhou))
+        aRate <- uses (spawns . asteroidRate) (touhouSpawnFactor touhou)
         spawnRoll w aRate Asteroid 
-        eRate <- uses (spawns . enemyRate) (* (1.0 + 0.5 * touhou))
+        cRate <- uses (spawns . chaserRate) (touhouSpawnFactor touhou)
+        spawnRoll w cRate Chaser
+        eRate <- uses (spawns . enemyRate) (touhouSpawnFactor touhou)
         spawnRoll w eRate (Enemy  aimAtAI floatAI)
 
 spawnRoll :: Float -> Float -> Race -> StateT World Identity ()
@@ -69,5 +74,4 @@ spawnRoll w rate what = do
         case ret of
             Just (x, y, vx, vy) -> do
                     spawnBeing (makeBeing what touhou (x, y) (vx, vy))
-                    spawnBeing (makeBeing Chaser touhou (x + 100, y) (vx, vy))
             Nothing -> return ()

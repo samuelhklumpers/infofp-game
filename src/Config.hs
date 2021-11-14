@@ -33,6 +33,9 @@ highscoreSize = 8
 bulletspeed :: Float
 bulletspeed  = 300
 
+chaseSpeed :: Float
+chaseSpeed = 100
+
 startPosMult :: Float
 startPosMult = 1.0
 
@@ -43,10 +46,13 @@ spawnTick :: Float
 spawnTick = 0.1 -- seconds
 
 secondsPerEnemy :: Float
-secondsPerEnemy = 2.0
+secondsPerEnemy = 6.0
 
 secondsPerAsteroid :: Float
-secondsPerAsteroid = 2.0
+secondsPerAsteroid = 3.0
+
+secondsPerChaser :: Float
+secondsPerChaser = 5.0
 
 spawnVXMin :: Float
 spawnVXMin = -20
@@ -59,9 +65,6 @@ spawnVYMin = -200
 
 spawnVYMax :: Float
 spawnVYMax = -40
-
-chaseSpeed :: Float
-chaseSpeed = 150
 
 v0 :: Vector
 v0 = (0, 0)
