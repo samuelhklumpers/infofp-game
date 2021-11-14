@@ -39,13 +39,14 @@ type Beings = Pointed Being
 
 type AimAI = Being -> Beings -> Maybe Vector
 type MoveAI = Being -> Beings -> Vector
-data Race = Player | Asteroid | Bullet | Enemy AimAI MoveAI
+data Race = Player | Asteroid | Bullet | Enemy AimAI MoveAI | Chaser
 
 instance Eq Race where
-    Player {} == Player {} = True
+    Player {}   == Player {}   = True
     Asteroid {} == Asteroid {} = True
-    Enemy {} == Enemy {} = True
-    Bullet {} == Bullet {} = True
+    Enemy {}    == Enemy {}    = True
+    Bullet {}   == Bullet {}   = True
+    Chaser {}   == Chaser {}   = True
     _ == _ = False
 
 data Turreted = Turret Timeout | NoTurret deriving (Eq, Show)
@@ -63,37 +64,44 @@ radiusBeing Player   {} = 16
 radiusBeing Enemy    {} = 16
 radiusBeing Asteroid {} = 24
 radiusBeing Bullet   {} = 8
+radiusBeing Chaser   {} = 10
 
 turretBeing :: Float -> Race -> Turreted
 turretBeing _ Player   = Turret 0.3
 turretBeing t Enemy {} = Turret $ 1.0 + (0.5 - 1.0) * t
 turretBeing _ Asteroid = NoTurret
 turretBeing _ Bullet   = NoTurret
+turretBeing _ Chaser   = NoTurret
 
 colorBeing :: Race -> Color
 colorBeing Player {}   = blue
 colorBeing Enemy {}    = red
 colorBeing Asteroid {} = greyN 0.5
 colorBeing Bullet {}   = yellow
+colorBeing Chaser {}   = green
 
 scoreBeing :: Race -> Int
 scoreBeing Player {} = 0
-scoreBeing Enemy {}  = 10
+scoreBeing Enemy {}  = 20
 scoreBeing Asteroid  = 10
 scoreBeing Bullet    = 0
+scoreBeing Chaser    = 15
 
 beingHP :: Race -> Int
 beingHP Player {}   = 3
 beingHP Enemy {}    = 2
 beingHP Asteroid {} = 3
 beingHP Bullet {}   = 1
+beingHP Chaser      = 2
 
 beingMass :: Race -> Float
 beingMass Player {}   = 1.0
 beingMass Enemy {}    = 1.0
 beingMass Asteroid {} = 2.0
 beingMass Bullet {}   = 0.1
+beingMass Chaser {}   = 0.5
 -- End of Race starting conditions, don't forget the collision harm effects!
+-- and don't forget to actually spawn them
 
 
 makeBeing :: Race -> Float -> Vector -> Vector -> Being
@@ -107,9 +115,11 @@ harm a b = case a ^. race of
         Player {} -> error "this game was supposed to be single-player..."
         _         -> (health -~ 1 $ a, health -~ 1 $ b)
     Bullet {} -> (health -~ 1 $ a, health -~ 1 $ b)
+    Chaser {} -> (health -~ 1 $ a, health -~ 1 $ b)
     Asteroid {} -> case b ^. race of
         Player {} -> harm b a
         Bullet {} -> harm b a
+        Chaser {} -> harm b a
         _         -> (a, b)
     Enemy {} -> case b ^. race of
         Enemy {}  -> (a, b)
