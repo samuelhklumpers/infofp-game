@@ -6,14 +6,15 @@ module Controls where
  -}
 
 
-import World
-import Shooting
-import Being
 import Graphics.Gloss.Interface.Pure.Game
 import qualified Graphics.Gloss.Data.Point.Arithmetic as Vec
 import Control.Lens
 import Control.Monad.State
 import Data.Maybe
+
+import Config
+import World
+
 
 isDown :: Event -> Bool
 isDown (EventKey _ s _ _) = s == Down
@@ -50,3 +51,16 @@ handleInput e w = fromMaybe w $ flip execStateT w $ do
                     _       -> return ()
             _ -> return ()
         _ -> return ()
+
+
+toggleAccel :: Vector -> Bool -> Vector -> Vector
+toggleAccel v b w
+    | b         = v Vec.+ w
+    | otherwise = w
+
+getAccel :: MotionControl -> Vector
+getAccel (MotionControl u r d l) =
+    toggleAccel e2 u $
+    toggleAccel e1 r $
+    toggleAccel (Vec.negate e2) d $
+    toggleAccel (Vec.negate e1) l v0

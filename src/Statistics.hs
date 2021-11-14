@@ -28,7 +28,6 @@ jload fp = do
         return Nothing
 
 
-
 jdump :: ToJSON a => a -> FilePath -> IO ()
 jdump obj fp = BL.writeFile fp (encode obj)
 

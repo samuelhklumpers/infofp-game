@@ -32,13 +32,13 @@ library
       Controls
       Drawing
       EnemyAI
+      Physics
       Pointed
       Reaping
       Rules
       Shooting
       Spawning
       Statistics
-      Util
       World
   other-modules:
       Paths_Asteroids

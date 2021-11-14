@@ -19,7 +19,7 @@ import System.Random.Stateful
 
 
 import Being
-import Util
+import Config
 import Statistics
 import Animations
 
@@ -45,7 +45,6 @@ data UserInput = UserInput {
 }
 makeLenses ''UserInput
 
-data GameState = Playing | Pausing | PlayerDied | GameOver | Exiting deriving Eq
 
 
 blankMotion :: MotionControl
@@ -53,6 +52,8 @@ blankMotion = MotionControl False False False False
 
 blankInput :: UserInput
 blankInput = UserInput Nothing blankMotion
+
+data GameState = Playing | Pausing | PlayerDied | GameOver | Exiting deriving Eq
 
 data World = World {
     _frame :: Frame,
