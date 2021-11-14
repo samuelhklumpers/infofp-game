@@ -15,25 +15,30 @@ import qualified Data.Vector.Unboxed.Sized as VS
 import Control.Exception
 import System.Exit
 
---import World
 import WorldInit
 import WorldExec
 import Statistics
 import Util
 import Drawing
-
+{-
+ - This module uses the statistics loader
+ - and runs the game as specified in WorldExec
+ -}
 
 w :: Int
 h :: Int
 w = 800
 h = 800
+--The position of where we draw the scores is based on these numbers
+--So if you change these (or find a nice formula)
+--also change them in the Drawing module
 
 windowFrame :: (Float, Float)
 windowFrame = (fromIntegral w / 2, fromIntegral h / 2)
 
 
 window :: Display
-window = InWindow "Nice Window" (w, h) (10, 10)
+window = InWindow "Awesome Asteroids Game" (w, h) (10, 10)
 
 background :: Color
 background = black
@@ -54,12 +59,3 @@ main = do
     playIO window background fps world (return . draw) ((return .) . handler) step
 
 
--- old comments from before giving up on capturing window closing
-    -- gloss doesn't give us our Worlds back when it finishes, so I don't see how I'm supposed to get things back in forced exits..
-    -- the alternative is to drop everything on ESC or close, and write our cleanup code inside gloss...
-    -- so I'll just keep an ioref and pretend nothing weird is happening....
-    -- GLUT seems to call exitWith from System.Exit, which makes cleanup pretty messy
-    -- make sure we only catch if it's actually a GLUT exit
-    -- update: it's not an ExitCode, let's catch everything
-    -- update 2: closing the window doesn't even raise an Exception..
-    -- ps: i'm well aware that IORef is about as bad as unsafeCoerce#
