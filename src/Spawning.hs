@@ -8,7 +8,7 @@ import Control.Lens
 import Config
 import Being
 import EnemyAI
-
+import Statistics
 {- 
  - This module handles the spawning of new enemies
  - We use randomness for the location
@@ -44,12 +44,13 @@ spawnStep dt = execState $ do
     spawns . timeSinceLast -= fromIntegral n * spawnTick
 
     forM_ [1..n] $ \_ -> do -- lol
+        time  <- use (stats.survived)
         aRate <- uses (spawns . asteroidRate) (* (1.0 + 0.5 * touhou))
         spawnRoll w aRate Asteroid 
         cRate <- use (spawns . chaserRate)
-        spawnRoll w cRate Chaser
+        if (time > 10 ) then spawnRoll w cRate Chaser else return()
         eRate <- uses (spawns . enemyRate) (* (1.0 + 0.5 * touhou))
-        spawnRoll w eRate (Enemy  aimAtAI floatAI)
+        if (time > 20) then  spawnRoll w eRate (Enemy  aimAtAI floatAI) else return()
 
 
 spawnRoll :: Float -> Float -> Race -> StateT World Identity ()
