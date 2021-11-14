@@ -66,12 +66,12 @@ radiusBeing Asteroid {} = 24
 radiusBeing Bullet   {} = 8
 radiusBeing Chaser   {} = 10
 
-turretBeing :: Race -> Turreted
-turretBeing Player   = Turret 0.3
-turretBeing Enemy {} = Turret 1.0
-turretBeing Asteroid = NoTurret
-turretBeing Bullet   = NoTurret
-turretBeing Chaser   = NoTurret
+turretBeing :: Float -> Race -> Turreted
+turretBeing _ Player   = Turret 0.3
+turretBeing t Enemy {} = Turret $ 1.0 + (0.5 - 1.0) * t
+turretBeing _ Asteroid = NoTurret
+turretBeing _ Bullet   = NoTurret
+turretBeing _ Chaser   = NoTurret
 
 colorBeing :: Race -> Color
 colorBeing Player {}   = blue
@@ -86,15 +86,27 @@ scoreBeing Enemy {}  = 20
 scoreBeing Asteroid  = 10
 scoreBeing Bullet    = 0
 scoreBeing Chaser    = 15
+
+beingHP :: Race -> Int
+beingHP Player {}   = 3
+beingHP Enemy {}    = 2
+beingHP Asteroid {} = 3
+beingHP Bullet {}   = 1
+beingHP Chaser      = 2
+
+beingMass :: Race -> Float
+beingMass Player {}   = 1.0
+beingMass Enemy {}    = 1.0
+beingMass Asteroid {} = 2.0
+beingMass Bullet {}   = 0.1
+beingMass Chaser {}   = 0.5
 -- End of Race starting conditions, don't forget the collision harm effects!
 -- and don't forget to actually spawn them
 
 
-makeBeing :: Race -> Vector -> Vector -> Being
-makeBeing r x v = Being (Phys x v baseMass (radiusBeing r) ) r baseHP lastFire (turretBeing r) where
-                        baseHP = 1
+makeBeing :: Race -> Float -> Vector -> Vector -> Being
+makeBeing r t x v = Being (Phys x v (beingMass r) (radiusBeing r)) r (beingHP r) lastFire (turretBeing t r) where
                         lastFire = 0
-                        baseMass = 1.0
 
 
 harm :: Being -> Being -> (Being, Being)

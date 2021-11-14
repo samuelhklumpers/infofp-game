@@ -63,6 +63,7 @@ data World = World {
     _spawns :: SpawnData,
     _randomizer :: StdGen,
     _gameState :: GameState,
+    _touhouFactor :: Float,
     _highscores :: [Stats' Identity],
     _timedAnimations :: TimedAnimations
 }

@@ -41,7 +41,7 @@ makeStats xs = blankStats & attempt .~ maximum' (map _attempt xs) + 1
 
 
 initPlayer :: Being
-initPlayer = makeBeing Player v0 v0
+initPlayer = makeBeing Player 0 v0 v0
 
 
 initWorld :: IO World
@@ -59,5 +59,6 @@ initWorld = do
         stats'
         baseSpawnRates
         rng Playing
+        0.0
         scores
         []

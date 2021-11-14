@@ -23,7 +23,7 @@ canShoot b = case b ^. turreted of
 
 shootBullet :: Being -> Race -> Vector -> Maybe Being
 --In principe kan alles schieten, leuk als je enemies maakt die turrets kunnen plaatsen op asteroids zodat asteroids op de player schieten. 
-shootBullet shooter ammo targetpos  | canShoot shooter = Just (makeBeing ammo startpos velocity) 
+shootBullet shooter ammo targetpos  | canShoot shooter = Just (makeBeing ammo 0 startpos velocity) 
                                     | otherwise    = Nothing where 
                                         time       = shooter ^. timeSinceLastShot
                                         shooterpos = shooter ^. phys. pos
