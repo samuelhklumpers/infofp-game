@@ -46,8 +46,12 @@ background = black
 fps :: Int
 fps = 30
 
+maximum' :: [Identity Int] -> Identity Int
+maximum' [] = 0
+maximum' xs = maximum xs
+
 makeStats :: [Stats] -> Stats
-makeStats xs = blankStats & attempt .~ maximum (map _attempt xs) + 1
+makeStats xs = blankStats & attempt .~ maximum' (map _attempt xs) + 1
 
 main :: IO ()
 main = do

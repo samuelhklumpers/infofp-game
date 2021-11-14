@@ -10,8 +10,11 @@ import Being
  - This module handles the spawning of new enemies
  - We use randomness for the location
  - Also there are some number to make the spawn location nice
+ - Also here is determined when certain enemies start spawning
  -}
 
+tEnemies :: Float 
+tEnemies = 10
 
 spawnTick :: Float
 spawnTick = 0.1 -- seconds
