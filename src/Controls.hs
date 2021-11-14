@@ -20,6 +20,7 @@ isDown :: Event -> Bool
 isDown (EventKey _ s _ _) = s == Down
 isDown _ = False
 
+-- process user input
 handleInput :: Event -> World -> World
 handleInput e w = fromMaybe w $ flip execStateT w $ do
     w <- get
@@ -58,6 +59,7 @@ toggleAccel v b w
     | b         = v Vec.+ w
     | otherwise = w
 
+-- get the average direction of all pressed motion keys
 getAccel :: MotionControl -> Vector
 getAccel (MotionControl u r d l) =
     toggleAccel e2 u $

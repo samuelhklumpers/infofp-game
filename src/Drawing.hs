@@ -17,21 +17,25 @@ import Config
  - There are sadly some magic numbers here which might need changing if the framesize changes
  -}
 
-textScale :: Float
-textScale = 0.12
-
-textHeight :: Float
-textHeight = 340 * textScale
-
-writeScreen :: String -> Picture -- some random numbers, gloss isn't too transparent on this stuff
+-- write a line of text
+writeScreen :: String -> Picture
 writeScreen str = translate (-fromIntegral windowWidth / 4) (fromIntegral windowHeight / 4) $ scale textScale textScale $ Color white $ Text str
 
+-- write a block of text
 writeList :: [String] -> Picture
 writeList = foldr writeAndShift Blank
 
 writeAndShift :: String -> Picture -> Picture
 writeAndShift str old = Pictures [writeScreen str, translate 0 (-textHeight) old]
 
+-- draw a being
+drawBeing :: Being -> Picture
+drawBeing Being {_phys = phys, _race = race} = color c $ translate x y $ circleSolid r where
+    Phys {_pos = p, _radius = r} = phys
+    (x, y) = p
+    c = colorBeing race
+
+-- draw all beings and statuses
 draw :: World -> Picture
 draw w = Pictures $ flip execState [] $ do
         let b = Being.toList $ _beings w
@@ -46,9 +50,3 @@ draw w = Pictures $ flip execState [] $ do
                 let scores = w ^. highscores
                 modify (writeList (map show scores):)
             _ ->          return ()
-
-drawBeing :: Being -> Picture
-drawBeing Being {_phys = phys, _race = race} = color c $ translate x y $ circleSolid r where
-    Phys {_pos = p, _radius = r} = phys
-    (x, y) = p
-    c = colorBeing race

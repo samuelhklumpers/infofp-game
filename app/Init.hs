@@ -39,10 +39,8 @@ maximum' xs = maximum xs
 makeStats :: [Stats] -> Stats
 makeStats xs = blankStats & attempt .~ maximum' (map _attempt xs) + 1
 
-
 initPlayer :: Being
 initPlayer = makeBeing Player 0 v0 v0
-
 
 initWorld :: IO World
 initWorld = do

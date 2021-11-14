@@ -26,7 +26,7 @@ isInBounds :: Frame -> Vector -> Bool
 isInBounds (x2, y2) (x1, y1) =
     -x2 <= x1 && x1 <= x2 && -y2 <= y1 && y1 <= y2
 
-
+-- collect all dead and out of bounds beings, and award score
 damageStep :: World -> World
 damageStep = execState $ do
     player <- use (beings . player)

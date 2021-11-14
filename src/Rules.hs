@@ -46,11 +46,13 @@ step dt = execStateT $ do
         PlayerDied -> gameEndStep
         _ -> return ()
 
+-- increment difficulty over time
 touhouStep :: StateT World IO ()
 touhouStep = do
     t <- uses (stats . survived) runIdentity
     touhouFactor .= min (t / 60) 1.0
 
+-- recover time since last shot for everyone
 reloadStep :: Float -> StateT World IO ()
 reloadStep dt = do
     beings %= fmap (reloadBeing dt)
@@ -58,6 +60,7 @@ reloadStep dt = do
 reloadBeing :: Float -> Being -> Being
 reloadBeing dt b = b & timeSinceLastShot +~ dt
 
+-- one-off handler for the PlayerDied state, updates highscores and saves them
 gameEndStep :: StateT World IO ()
 gameEndStep = do
     w <- get
@@ -68,15 +71,17 @@ gameEndStep = do
     highscores .= newScores
     gameState .= GameOver
 
+-- perform all physics, such as collisions and freefall motion
 physicsStep :: Float -> World -> World
 physicsStep dt =
     collisionStep .
     freeFallStep dt
 
-
+-- increment time survived
 scoreStep :: Float -> World -> World
 scoreStep dt = stats . survived +~ Identity dt
 
+-- accelerate the player according to their inputs
 userStep :: Float -> World -> World
 userStep dt = execState $ do
     a <- uses (userIn . moving) getAccel
@@ -90,5 +95,6 @@ freeFallStep dt w@World {_beings = b} = w {_beings = fmap (freeFall dt) b}
 collisionStep :: World -> World
 collisionStep = beings %~ collisions
 
+-- update all ongoing animations
 anistep :: Float -> World -> World
 anistep dt = execState $ do timedAnimations %= animationsStep dt

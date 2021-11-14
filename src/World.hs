@@ -30,7 +30,6 @@ type Firing = Maybe Vector
 data SpawnData = SpawnData {_timeSinceLast :: Float, _asteroidRate :: Float, _enemyRate :: Float, _chaserRate ::Float} deriving Show
 makeLenses ''SpawnData
 
-
 data MotionControl = MotionControl {
     _motionU :: Bool,
     _motionR :: Bool,
@@ -44,8 +43,6 @@ data UserInput = UserInput {
     _moving  :: MotionControl
 }
 makeLenses ''UserInput
-
-
 
 blankMotion :: MotionControl
 blankMotion = MotionControl False False False False
@@ -69,10 +66,8 @@ data World = World {
 }
 makeLenses ''World
 
-
 instance Show World where
     show w = ":(" -- put stuff here StateGenM doesn't print nice
-
 
 spawnBeing :: Being -> State World ()
 spawnBeing b = beings <>= terminal b

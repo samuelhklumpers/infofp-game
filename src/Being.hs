@@ -108,7 +108,7 @@ makeBeing :: Race -> Float -> Vector -> Vector -> Being
 makeBeing r t x v = Being (Phys x v (beingMass r) (radiusBeing r)) r (beingHP r) lastFire (turretBeing t r) where
                         lastFire = 0
 
-
+-- apply damage selectively after collisions
 harm :: Being -> Being -> (Being, Being)
 harm a b = case a ^. race of
     Player {} -> case b ^. race of
