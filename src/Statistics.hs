@@ -17,7 +17,7 @@ import GHC.Generics
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
 
-
+-- Aeson stuff for loading scores with defaults
 jload :: FromJSON a => FilePath -> IO (Maybe a)
 jload fp = do
     exists <- doesFileExist fp
@@ -27,10 +27,8 @@ jload fp = do
     else
         return Nothing
 
-
 jdump :: ToJSON a => a -> FilePath -> IO ()
 jdump obj fp = BL.writeFile fp (encode obj)
-
 
 data Stats' f = Stats' {_survived :: f Float, _attempt :: f Int, _score:: Int} deriving Generic
 makeLenses ''Stats'
@@ -51,7 +49,6 @@ deriving instance Eq (Stats' Identity)
 instance Ord (Stats' Identity) where
     x < y = x ^. score < y ^. score
     x <= y = x == y || x < y
-
 
 instance Default Stats' where
     constrDef _ = blankStats

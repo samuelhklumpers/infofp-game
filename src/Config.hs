@@ -15,10 +15,6 @@ windowWidth = 800
 windowHeight :: Int
 windowHeight = 800
 
---The position of where we draw the scores is based on these numbers
---So if you change these (or find a nice formula)
---also change them in the Drawing module
-
 windowFrame :: (Float, Float)
 windowFrame = (fromIntegral windowWidth / 2, fromIntegral windowHeight / 2)
 
@@ -64,6 +60,8 @@ spawnVYMin = -200
 spawnVYMax :: Float
 spawnVYMax = -40
 
+chaseSpeed :: Float
+chaseSpeed = 150
 
 v0 :: Vector
 v0 = (0, 0)
@@ -73,3 +71,9 @@ e1 = (1, 0)
 
 e2 :: Vector
 e2 = (0, 1)
+
+textScale :: Float
+textScale = 0.12
+
+textHeight :: Float
+textHeight = 340 * textScale

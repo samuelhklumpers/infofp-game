@@ -29,12 +29,11 @@ collide a b
         d1 = magV v
         d2 = (a ^. phys . radius) + (b ^. phys . radius)
 
--- elastic collision
+-- collision helper
 collisions :: Beings -> Beings
 collisions = fromList . doCollisions . toList
 
-
--- It is sufficient to model a bump as a collision of 2 point particles
+-- perform elastic collision of two beings
 bump :: Being -> Being -> (Being, Being)
 bump a b = (phys . vel .~ v1 $ a, phys . vel .~ v2 $ b)
     where
@@ -48,7 +47,7 @@ bump a b = (phys . vel .~ v1 $ a, phys . vel .~ v2 $ b)
         v1 = mulSV ((m1 - m2) / (m1 + m2)) u1 Vec.+ mulSV (2 * m2 / (m1 + m2)) u2
         v2 = mulSV (2 * m1 / (m1 + m2)) u1 Vec.+ mulSV ((m2 - m1) / (m1 + m2)) u2
 
-
+-- perform all collisions between all beings, in mutable state
 doCollisions :: [Being] -> [Being]
 doCollisions bs = runST $ do
     let n = length bs

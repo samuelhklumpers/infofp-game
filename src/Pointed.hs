@@ -2,10 +2,10 @@
 
 module Pointed where
 
-
 import Control.Lens
 
 
+-- list with a selected point (the player in the list of all beings)
 data Pointed a = Pointed {_player :: a, _npo :: [a]}
 makeLenses ''Pointed
 

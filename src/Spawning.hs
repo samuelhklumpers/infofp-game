@@ -15,7 +15,6 @@ import EnemyAI
  - Also there are some number to make the spawn location nice
  - Also here is determined when certain enemies start spawning
  -}
- 
 
 uniformFloat :: Float -> Float -> State StdGen Float
 uniformFloat l h = state $ uniformR (l, h)
@@ -23,7 +22,7 @@ uniformFloat l h = state $ uniformR (l, h)
 uniformBool :: State StdGen Bool
 uniformBool = state uniform
 
-
+-- convert an interval (time/event) to a rate (prob/tick)
 -- rates as in T ~ Exp(1/t), t in spawnTicks
 toRate :: Float -> Float 
 toRate interval = perTick where
@@ -33,6 +32,7 @@ toRate interval = perTick where
 baseSpawnRates :: SpawnData
 baseSpawnRates = SpawnData 0 (toRate secondsPerAsteroid) (toRate secondsPerEnemy)
 
+-- spawn new beings randomly
 spawnStep :: Float -> World -> World
 spawnStep dt = execState $ do
     touhou <- use touhouFactor
@@ -43,12 +43,11 @@ spawnStep dt = execState $ do
     let n = round (t / spawnTick)
     spawns . timeSinceLast -= fromIntegral n * spawnTick
 
-    forM_ [1..n] $ \_ -> do -- lol
+    forM_ [1..n] $ \_ -> do
         aRate <- uses (spawns . asteroidRate) (* (1.0 + 0.5 * touhou))
         spawnRoll w aRate Asteroid 
         eRate <- uses (spawns . enemyRate) (* (1.0 + 0.5 * touhou))
         spawnRoll w eRate (Enemy  aimAtAI floatAI)
-
 
 spawnRoll :: Float -> Float -> Race -> StateT World Identity ()
 spawnRoll w rate what = do
